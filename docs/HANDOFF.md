@@ -219,7 +219,7 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 - Multi-hop version planning (0.x → 2.x across several breaking releases).
 - VS Code extension / pre-commit hook / GitHub Action (adoption channels).
 - Add Groq/OpenRouter via an OpenAI-compatible generator (free cloud LLMs).
-- ~~Stage a clean git commit~~ ✅ done — public on GitHub (`main`). Next git steps: write a technical post, add CONTRIBUTING + a UI screenshot/GIF to the README, and confirm the first CI run is green.
+- ~~Stage a clean git commit~~ ✅ done — public on GitHub (`main`); **CI green** (test + docker-build jobs). Next: write a technical post, add CONTRIBUTING + a UI screenshot/GIF to the README.
 
 ---
 
