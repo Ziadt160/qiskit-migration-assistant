@@ -8,7 +8,7 @@
 
 A production-grade **RAG system that ports Qiskit code from older versions to the latest (2.x)**. You paste old Qiskit code (or point it at a file/folder) and it returns migrated code plus a cited, per-change rationale — grounded in the official deprecation/release-note record and validated by executing the result against `qiskit==2.x`.
 
-**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes; lint clean. Nothing is committed yet — everything is **untracked on `master`**.
+**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes (79); lint clean. **Open-sourced** — public on GitHub at **https://github.com/Ziadt160/qiskit-migration-assistant** (branch `main`); MIT licensed; git author `Ziad <ziadt160@gmail.com>`. Push uses Windows Git Credential Manager (no `gh` CLI installed).
 
 **Key results (golden eval — now 14 cases, covering every curated deprecation except `qiskit.pulse`):**
 | Metric | Score | Tier |
@@ -219,7 +219,7 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 - Multi-hop version planning (0.x → 2.x across several breaking releases).
 - VS Code extension / pre-commit hook / GitHub Action (adoption channels).
 - Add Groq/OpenRouter via an OpenAI-compatible generator (free cloud LLMs).
-- Stage a clean git commit (everything is untracked on `master`).
+- ~~Stage a clean git commit~~ ✅ done — public on GitHub (`main`). Next git steps: write a technical post, add CONTRIBUTING + a UI screenshot/GIF to the README, and confirm the first CI run is green.
 
 ---
 
