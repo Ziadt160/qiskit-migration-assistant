@@ -15,9 +15,11 @@ dependencies = [
   "pinecone>=5.0",
   # --- ingestion / chunking ---
   "langchain-text-splitters>=0.2",
-  # --- generation ---
+  # --- generation (pluggable LLM providers: gemini | ollama | anthropic) ---
   "langchain-core>=0.2",
   "langchain-google-genai>=1.0",
+  "langchain-ollama>=0.2",
+  "anthropic>=0.39",
   # --- api + async worker ---
   "fastapi>=0.111",
   "uvicorn[standard]>=0.30",
