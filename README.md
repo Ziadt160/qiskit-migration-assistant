@@ -4,6 +4,7 @@
 > per-change rationale — grounded in the official deprecation record and **validated by
 > actually executing the result** against the target Qiskit.
 
+[![CI](https://github.com/Ziadt160/qiskit-migration-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Ziadt160/qiskit-migration-assistant/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Qiskit target 2.x](https://img.shields.io/badge/qiskit%20target-2.x-6929c4.svg)](https://www.ibm.com/quantum/qiskit)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
@@ -133,7 +134,7 @@ backed by an **RQ** worker (jobs in SQLite/Postgres), plus a **Streamlit** UI.
 ### Install
 
 ```bash
-git clone <your-fork-url> qiskit-migration-assistant
+git clone https://github.com/Ziadt160/qiskit-migration-assistant.git
 cd qiskit-migration-assistant
 
 python -m venv .venv
