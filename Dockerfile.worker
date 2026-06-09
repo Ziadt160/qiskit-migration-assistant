@@ -1,0 +1,16 @@
+# Worker image: RQ worker running the migration pipeline.
+# Mounts Docker socket at runtime if DockerSandbox is used for execution validation.
+FROM python:3.12-slim AS base
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN pip install --upgrade pip && pip install ".[postgres]"
+
+RUN useradd --create-home --uid 10001 appuser
+USER appuser
+
+CMD ["python", "-m", "src.worker.run"]

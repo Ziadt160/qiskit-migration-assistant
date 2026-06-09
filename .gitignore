@@ -1,0 +1,36 @@
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+
+# --- Virtualenvs ---
+.venv/
+venv/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Local data / build artifacts ---
+app.db
+*.db
+*.sqlite3
+build/
+dist/
+
+# --- Documentation corpus (large external Qiskit docs checkout; see README) ---
+documentation/
+
+# --- Claude Code local state (keep the preview launch config) ---
+.claude/*
+!.claude/launch.json
+
+# --- OS ---
+.DS_Store
+Thumbs.db

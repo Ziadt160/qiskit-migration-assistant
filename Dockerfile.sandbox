@@ -1,0 +1,19 @@
+# Ephemeral execution environment for validating ported code against the target
+# Qiskit. Run by DockerSandbox with --network=none, --read-only, resource caps,
+# and a non-root user. Keep this image minimal and pinned.
+FROM python:3.12-slim
+
+# Pin to the migration target version, plus the packages the gold/migrated code
+# commonly imports (Aer simulator, the split-out algorithms package).
+ARG QISKIT_VERSION=2.2.*
+RUN pip install --no-cache-dir \
+        "qiskit==${QISKIT_VERSION}" \
+        "qiskit-aer" \
+        "qiskit-algorithms" \
+    && useradd --create-home --uid 10001 sandbox
+
+USER sandbox
+WORKDIR /work
+
+# No ENTRYPOINT: DockerSandbox supplies the full command
+# (python -W error::DeprecationWarning /work/snippet.py).

@@ -1,0 +1,89 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: qiskit-migration-redis
+    # Published on 6380 (6379 is taken by another project) so a host-run GPU worker
+    # can share this queue with the Dockerized API.
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: postgres:16-alpine
+    container_name: qiskit-migration-db
+    environment:
+      POSTGRES_USER: qiskit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qiskit}
+      POSTGRES_DB: qiskit_migration
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qiskit"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: qiskit-migration-api
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql+psycopg://qiskit:${POSTGRES_PASSWORD:-qiskit}@db:5432/qiskit_migration
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: qiskit-migration-worker
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql+psycopg://qiskit:${POSTGRES_PASSWORD:-qiskit}@db:5432/qiskit_migration
+      REDIS_URL: redis://redis:6379/0
+      SANDBOX_BACKEND: docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      # Prebuilt deprecation knowledge base (run `make build-store` first).
+      - ./app.db:/app/app.db:ro
+      # Lets the worker launch the qiskit-sandbox container for DockerSandbox.
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: qiskit-migration-ui
+    environment:
+      MIGRATION_API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  pg_data:

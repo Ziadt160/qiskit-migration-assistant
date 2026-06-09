@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Qiskit Migration Assistant</title>
+  <meta name="description" content="Upgrade old Qiskit code to the latest release — grounded in the official deprecation record and validated by execution." />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top navigation -->
+  <nav class="nav">
+    <a class="brand" href="/ui/">
+      <img class="brand-mark" src="assets/mark.png" alt="Qiskit Migration Assistant logo" />
+      <span class="brand-text"><b>Qiskit</b><span class="accent">Migration Assistant</span></span>
+    </a>
+    <div class="nav-right">
+      <span id="api-status" class="pill pill-idle" title="Migration API status">
+        <span class="dot"></span><span id="api-status-text">checking…</span>
+      </span>
+      <a class="nav-link" href="https://www.ibm.com/quantum/qiskit" target="_blank" rel="noopener">Qiskit&nbsp;↗</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">RAG-powered code migration · fully local &amp; free</p>
+      <h1>Upgrade your Qiskit code to&nbsp;<span class="grad">2.x</span>, automatically.</h1>
+      <p class="lede">
+        Paste code written for an older Qiskit and get it ported to the latest release —
+        with a cited rationale for every change, grounded in the official deprecation record
+        and <strong>validated by actually executing it</strong>.
+      </p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">14</span><span class="stat-lbl">golden cases</span></div>
+        <div class="stat"><span class="stat-num">17/17</span><span class="stat-lbl">deprecations detected</span></div>
+        <div class="stat"><span class="stat-num">13/14</span><span class="stat-lbl">run on Qiskit 2.2.3</span></div>
+      </div>
+      <a class="hero-cta" href="#workbench">Try it ↓</a>
+    </div>
+  </header>
+
+  <!-- Workbench -->
+  <main class="container" id="workbench">
+    <section class="workbench">
+      <!-- Input -->
+      <div class="panel panel-input">
+        <div class="panel-head">
+          <h2>Old Qiskit code</h2>
+          <div class="panel-tools">
+            <label class="field">
+              <span>Example</span>
+              <select id="examples">
+                <option value="">Load an example…</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Source version</span>
+              <input id="source-version" type="text" placeholder="optional · e.g. 0.46" />
+            </label>
+          </div>
+        </div>
+        <div class="editor">
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off"
+            placeholder="from qiskit import QuantumCircuit, execute, Aer&#10;qc = QuantumCircuit(2, 2)&#10;..."></textarea>
+        </div>
+        <div class="panel-actions">
+          <button id="run" class="btn btn-primary" disabled>
+            <span class="btn-label">Migrate</span>
+          </button>
+          <span class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run · <kbd>Esc</kbd> clears results</span>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="panel panel-output" id="output">
+        <div class="empty-state" id="empty-state">
+          <img class="empty-logo" src="assets/mark.png" alt="" />
+          <p>Your migrated code, a diff, a per-change rationale, and the sandbox verdict will appear here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how">
+      <h2 class="how-title">How it works</h2>
+      <div class="how-grid">
+        <div class="how-card"><span class="how-i">①</span><h3>Detect</h3><p>AST analysis flags every deprecated/removed API against an authoritative table.</p></div>
+        <div class="how-card"><span class="how-i">②</span><h3>Retrieve</h3><p>Hybrid search pulls the matching release notes &amp; migration guides as evidence.</p></div>
+        <div class="how-card"><span class="how-i">③</span><h3>Generate</h3><p>An LLM rewrites the code with a cited reason for each change — structured output.</p></div>
+        <div class="how-card"><span class="how-i">④</span><h3>Validate &amp; run</h3><p>Static checks for leaked APIs, then execution in an air-gapped sandbox with self-repair.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <img class="foot-mark" src="assets/mark.png" alt="" />
+    <span>Qiskit Migration Assistant — grounded · validated · executable. Runs fully local on Ollama + GPU embeddings.</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

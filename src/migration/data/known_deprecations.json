@@ -1,0 +1,137 @@
+[
+  {
+    "symbol": "qiskit.execute",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "backend.run",
+    "note": "The top-level execute() function was removed in Qiskit 1.0. Transpile first, then run on a backend: transpiled = transpile(circuit, backend); job = backend.run(transpiled). For expectation values / sampling prefer the Sampler/Estimator primitives.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.BasicAer",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit.providers.basic_provider.BasicSimulator",
+    "note": "qiskit.BasicAer was removed in 1.0. Use BasicSimulator from qiskit.providers.basic_provider, or AerSimulator from the qiskit-aer package.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.providers.basicaer",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit.providers.basic_provider",
+    "note": "The basicaer module was removed in 1.0; replaced by qiskit.providers.basic_provider.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.bind_parameters",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.assign_parameters",
+    "note": "bind_parameters was removed in 1.0. Use assign_parameters() as a drop-in replacement (it also supports inplace and additional features).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.Aer",
+    "status": "moved",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit_aer.Aer",
+    "note": "Aer is no longer re-exported from qiskit. Install qiskit-aer and import from qiskit_aer: from qiskit_aer import AerSimulator (or Aer).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.opflow",
+    "status": "removed",
+    "since_version": "0.43",
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info",
+    "note": "qiskit.opflow was removed in 1.0. Use qiskit.quantum_info (SparsePauliOp, Statevector, Operator) together with the Estimator/Sampler primitives.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.algorithms",
+    "status": "moved",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms",
+    "note": "qiskit.algorithms was removed from qiskit in 1.0 and split into the standalone qiskit-algorithms package. Install it and import from qiskit_algorithms.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.extensions",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit.circuit.library",
+    "note": "The qiskit.extensions module was removed in 1.0. The operations now live in qiskit.circuit.library (e.g. UnitaryGate, Initialize).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.compiler.assemble",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "backend.run",
+    "note": "assemble()/Qobj were removed in 1.0. Pass transpiled QuantumCircuits directly to backend.run(); the Qobj intermediate no longer exists.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.qasm",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "qiskit.qasm2.dumps",
+    "note": "The QuantumCircuit.qasm() / Instruction.qasm() methods were removed in 1.0. Use qiskit.qasm2.dumps(circuit) / qiskit.qasm2.dump(circuit, file).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.pulse",
+    "status": "removed",
+    "since_version": "1.3",
+    "removed_in": "2.0",
+    "replacement": null,
+    "note": "The pulse module was removed in Qiskit 2.0. There is no in-tree replacement; pulse-level programming moved out of core Qiskit. Code relying on qiskit.pulse cannot run on Qiskit 2.x.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.IBMQ",
+    "status": "removed",
+    "since_version": "0.40",
+    "removed_in": "1.0",
+    "replacement": "qiskit_ibm_runtime.QiskitRuntimeService",
+    "note": "qiskit.IBMQ was removed. Use the qiskit-ibm-runtime package: from qiskit_ibm_runtime import QiskitRuntimeService.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.tools.job_monitor",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": null,
+    "note": "qiskit.tools (including job_monitor and parallel_map) was removed in 1.0. Poll job.status()/job.result() directly.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.providers.fake_provider.FakeProvider",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit.providers.fake_provider.GenericBackendV2",
+    "note": "Snapshot fake backends (FakeProvider, FakeVigo, FakeTokyo, ...) were removed/reorganized. Use GenericBackendV2 to build a configurable fake backend.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "execute",
+    "status": "removed",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "backend.run",
+    "note": "Bare execute(circuit, backend) (imported from qiskit) was removed in 1.0. Use transpile(circuit, backend) then backend.run(transpiled), or the Sampler/Estimator primitives.",
+    "source": "curated-seed"
+  }
+]

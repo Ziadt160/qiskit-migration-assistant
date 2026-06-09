@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-Command",
+        "$env:LLM_PROVIDER='ollama'; $env:QUEUE_EAGER='true'; $env:SANDBOX_BACKEND='docker'; python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8011"
+      ],
+      "port": 8011
+    }
+  ]
+}
