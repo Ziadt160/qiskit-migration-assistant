@@ -47,7 +47,7 @@ old code ──▶ AST symbol extraction (symbols.py)
 
 - **Python 3.14** on the host (`C:\Python314`). NOTE: heavy compiled wheels lag — **`qiskit`/`qiskit-aer` have no 3.14 wheels**, so executable validation runs in **Docker (python 3.12)**, not on the host. Production Docker images pin **3.12**.
 - **GPU:** NVIDIA RTX 4060 Ti (8 GB). torch `2.12.0+cu126` installed (CUDA). BGE-large (~1.3 GB) + a 7B Ollama model (~4.7 GB) ≈ 6 GB — fits, but if OOM set `EMBEDDING_DEVICE=cpu`.
-- **Ollama** 0.20.7 installed, with `qwen2.5-coder:7b` and `deepseek-r1:8b` pulled. The server (`ollama serve`) tends to stop when idle — restart it before live runs.
+- **Ollama** 0.21.0 installed (runs as a Windows service), with `qwen2.5-coder:7b` and `deepseek-r1:8b` pulled. Reachable at `http://localhost:11434`; verify with `curl http://localhost:11434/api/tags`.
 - **Docker Desktop** — used only for the executable sandbox and the optional Redis/Postgres compose stack. **It tends to shut down**; when it's down, run the API in **eager mode** (no Redis/worker needed).
 - **`.env`** (gitignored) holds the keys. Present: `PINECONE_API_KEY`, `PINECONE_INDEX`, `COHERE_API_KEY`, `HF_TOKEN`, `GEMINI_API_KEY`, `LANGCHAIN_*`. **Not present:** `ANTHROPIC_API_KEY`, `LLM_PROVIDER`. See `.env.example` for the full list.
 
@@ -70,7 +70,9 @@ pip install -e ".[dev]"
 
 ## 4. Quick start — bring the running stack back up
 
-The background processes do **not** persist across sessions. To resume the **frontend** (currently configured in eager mode because Docker was down):
+> **Fastest verified path (used to confirm the live E2E this session):** `.claude/launch.json` defines a `web` config that runs the API on **:8011** with `LLM_PROVIDER=ollama`, `QUEUE_EAGER=true`, `SANDBOX_BACKEND=docker` (so retrieval + LLM + Docker sandbox all run inline). Open **http://localhost:8011/ui/**. A real `execute + Aer` migration completed end-to-end in ~105 s first run (model load), validation PASS, coverage 3/3, **sandbox `ok=True`** (ran on Qiskit 2.2.3).
+
+The background processes do **not** persist across sessions. To resume the **frontend** manually (eager mode is simplest and needs no Redis/worker):
 
 ```powershell
 cd "C:\Evoth Labs\RAGProject"
@@ -160,6 +162,10 @@ LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   #
 - **Heuristic release-note parser has residual false positives.** The curated seed (`known_deprecations.json`) is authoritative and outranks parsed records (`_score`). `_CURRENT_ALLOWLIST` in `deprecations.py` prevents flagging current core APIs (e.g. `transpile`).
 - **Small models wrap code in ```` ```python ```` fences** → `_strip_code_fences()` in `generate.py` cleans all providers' output.
 - **`documentation/`** is a separate, large Qiskit-docs checkout (gitignored). Needed to build the store + ingest, not at request time.
+- **Provider client libs are declared deps now.** `anthropic` + `langchain-ollama` were used but undeclared in `pyproject.toml` (only `langchain-google-genai`/Gemini was) → CI failed because `AnthropicGenerator.__init__` does `import anthropic` before the key check, raising `ModuleNotFoundError` instead of the expected `ValueError`. Fixed by declaring both as core deps. Lesson: any new provider's SDK must be a declared dep.
+- **`ollama serve` exits 1 if Ollama already runs as a Windows service** (port 11434 in use) — that's fine, it's already serving. Check with `curl http://localhost:11434/api/tags`.
+- **GitHub Actions logs need auth (`gh` not installed here).** To debug a CI failure, reproduce it locally in the CI image: `docker run --rm -v "C:\Evoth Labs\RAGProject:/app" -w /app python:3.12-slim sh -c "pip install -e '.[dev]' -q; pytest -q"`.
+- **Web-UI diff is side-by-side** (ORIGINAL | MIGRATED grid, client-side LCS in `app.js`); palette softened (muted lavender/mint). Brand assets are Canva PNGs post-processed with Pillow (transparent export is plan-gated). `_WEB_DIR` in `api/main.py` resolves to `src/app/web`; Docker `COPY src ./src` bundles it.
 
 ---
 
@@ -206,20 +212,23 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 
 ## 10. What's done / what's next
 
-**Done:** the full pipeline (M1–M7), local GPU embeddings, three LLM providers, two-tier eval (isolated + executable), Docker sandbox executable verification, file/repo migration + diff + coverage, working Streamlit frontend.
+**Done:** the full pipeline (M1–M7), local GPU embeddings, three LLM providers, two-tier eval (isolated + executable), Docker sandbox executable verification, file/repo migration + diff + coverage.
 
-**Recommended next move (from strategy discussion):** open-source it + write a technical post (architecture + eval). Highest ROI, lowest risk; on-ramp to everything else.
+**Done this session (2026-06-09/10):**
+- **Open-sourced** — public on GitHub (`main`), MIT, CI **green** (test + docker-build).
+- **Golden eval expanded 8 → 14 cases** (covers every curated deprecation except `qiskit.pulse`); deterministic gate re-verified (detection 17/17, cleanliness 14/14, references 13/14 executable on Qiskit 2.2.3).
+- **New web UI** (`src/app/web/`, served by the API at `/ui`): hero, examples, progress stepper, metrics, **side-by-side diff**, cited changes, sandbox verdict; soft modern theme; Canva brand assets. Streamlit kept as the alternative.
+- **Live full E2E verified through the browser** (Ollama + Pinecone + Docker sandbox): correct migration, validation PASS, sandbox `ok=True`.
+- **Fixed a real dependency bug** (`anthropic`/`langchain-ollama` undeclared) — found via CI, root-caused by reproducing CI in Docker.
+- **Code review done** → see **§12** for the prioritized roadmap.
 
-**Other backlog (build on demand, not on spec):**
-- Grow the golden eval set further (now 14 cases; biggest quality-signal win). Add real-world multi-deprecation snippets and a `qiskit.pulse` case (removed in 2.0, no in-tree port).
-- Behavioral-equivalence check (run old-on-old vs new-on-new, compare outputs) — the standout differentiator.
-- Notebook (`.ipynb`) support (high value for the research audience).
-- Source-version auto-detection from the code.
-- Generalize the engine to a 2nd library (Pandas 1→2) — the platform thesis.
-- Multi-hop version planning (0.x → 2.x across several breaking releases).
-- VS Code extension / pre-commit hook / GitHub Action (adoption channels).
-- Add Groq/OpenRouter via an OpenAI-compatible generator (free cloud LLMs).
-- ~~Stage a clean git commit~~ ✅ done — public on GitHub (`main`); **CI green** (test + docker-build jobs). Next: write a technical post, add CONTRIBUTING + a UI screenshot/GIF to the README.
+**Top next moves (prioritized — full rationale in §12):**
+1. **Adversarial / held-out eval set** — the current eval is built from the same 15 seed records it tests, so it can't measure real-world coverage. This is the #1 quality signal.
+2. **Local vector-store option + shippable index** — makes "fully local & free" literally true (today Pinecone is the one piece a fresh cloner can't run).
+3. **Sandbox container cleanup on timeout** — small fix; closes the only real operational hazard (orphaned containers).
+4. **Behavioral-equivalence check** (old-on-old vs new-on-new) — the standout differentiator; sandbox infra already exists.
+
+**Broader backlog (build on demand):** technical post; CONTRIBUTING + UI screenshot/GIF in README; notebook (`.ipynb`) support; source-version auto-detection; generalize to a 2nd library (Pandas 1→2); multi-hop version planning; VS Code extension / pre-commit / GitHub Action; Groq/OpenRouter via an OpenAI-compatible generator.
 
 ---
 
@@ -231,4 +240,22 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 - **Anthropic** (optional, paid) — `ANTHROPIC_API_KEY` for Claude; ~$0.026/migration on Sonnet 4.6.
 - **Gemini** (optional, free-tier limited) — `GEMINI_API_KEY`.
 - **HuggingFace** — `HF_TOKEN` (model downloads).
+
+---
+
+## 12. Code review — strengths, weaknesses & prioritized roadmap
+
+_Full read-through of the core on 2026-06-10. One-line thesis: **the system around the LLM is excellent; the knowledge it's grounded in is the bottleneck.** The architecture was designed so curating more knowledge is cheap and immediately leveraged — now it's time to collect on that._
+
+**Strengths (keep these):** the architecture shrinks the LLM's job (authoritative table decides *what* changed; retrieval supplies evidence; LLM only rewrites; two validators catch lies). Verification-first with honest numbers. Strong hygiene — DI everywhere, graceful degradation (cache/reranker/Redis → no-op/eager), lazy provider imports, shared structured-output schema across providers. Excellent docs.
+
+**Weaknesses, ranked by impact:**
+
+1. **The knowledge base is the moat, and it's thin — and the eval can't see that.** `known_deprecations.json` has ~15 records, and the 14 golden cases are derived from those same records → detection recall is **circular** (it measures "lookup works on APIs the seed knows," not real-world coverage). Qiskit 0.x→2.x has hundreds of breaking changes (`QuantumInstance`, `qiskit.test.mock`, `qc.cnot()`, old `transpile` kwargs, `qiskit.tools.visualization`, …). **Fix:** build a **held-out adversarial eval** from real old-Qiskit code (textbooks, pre-1.0 GitHub repos) you did *not* curate the seed from; measure the coverage gap; use it to drive seed growth. _This is the #1 priority._
+2. **"Fully local & free" has a Pinecone asterisk.** A fresh cloner can't run retrieval without a Pinecone account + key + re-ingesting a separately-cloned corpus → only `--offline` works out of the box. **Fix:** a local vector backend (Chroma/FAISS/sqlite-vec) behind the existing pluggable pattern + a shippable pre-built index.
+3. **Docker sandbox leaks containers on timeout.** `sandbox.py:111` `subprocess.run(timeout=…)` kills the `docker` CLI, not the container — an LLM infinite loop orphans a 1-CPU/1GB container. **Fix:** run with `--name` and `docker rm -f` on timeout (or wrap the in-container cmd with coreutils `timeout`). While there add `--cap-drop=ALL --security-opt=no-new-privileges`; note `SANDBOX_BACKEND=local` runs LLM output on the host with zero isolation (convention-only guard).
+4. **API isn't multi-instance-safe / no auth.** Rate limiter (`api/main.py:44`) is in-process memory keyed on direct client IP → resets on restart, and behind a proxy every request shares the proxy IP (one user exhausts all). `/metrics` unauthenticated; `user_id` in schema but never populated; cache key is code+target only (a better prompt/seed won't invalidate stale cached results — 1-day TTL mostly saves it). Fine for single-VM as documented; fix before real exposure.
+5. **Smaller/real:** repair loop feeds only the *latest* failure (can oscillate A→B→A and burn all repairs); it also sandbox-runs code that already failed static validation (wasted run). UI poll timeout (240s) < server job timeout (900s) → browser says "timed out" while the job still completes. `retrieval/search.py` calls `logging.basicConfig()` at import (library configuring global logging). Last-segment matching relies on hand-maintained `_GENERIC_SEGMENTS`/`_CURRENT_ALLOWLIST` stoplists. CI mypy non-blocking; no coverage; docker-build builds images it never runs.
+
+**Recommended order:** (1) adversarial eval → (2) local vector store + shipped index → (3) sandbox cleanup + cap-drop → (4) behavioral-equivalence check. Items 1–2 unlock the OSS story; 3 is a tiny safety PR; 4 is the differentiator.
 </content>
