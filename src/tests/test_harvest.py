@@ -39,6 +39,7 @@ class FakeSandbox:
         ("Use `cx` instead.", "cx"),
         ("Instead, use QuantumCircuit.cx().", "QuantumCircuit.cx"),
         ("This was replaced by PauliList in 1.0.", "PauliList"),
+        ("Instead, use the new API.", None),  # stopword "the" skipped, not proposed
         ("Deprecated with no guidance.", None),
         (None, None),
     ],
@@ -63,13 +64,36 @@ def test_candidates_from_breakages_filters_and_enriches():
         {"kind": "OBJECT_REMOVED", "object_path": "qiskit.circuit.QuantumCircuit.cnot"},
     ]
     docs = {"qiskit.circuit.QuantumCircuit.cnot": "Removed. Use `cx` instead."}
-    cands = _candidates_from_breakages(breakages, "2.0.2", lambda p: docs.get(p))
+    cands = _candidates_from_breakages(
+        breakages, "2.0.2", lambda p: docs.get(p), dedupe_by_segment=False
+    )
 
-    symbols = [c["symbol"] for c in cands]
-    assert symbols == ["qiskit.opflow", "qiskit.circuit.QuantumCircuit.cnot"]
+    by_symbol = {c["symbol"]: c for c in cands}
+    assert set(by_symbol) == {"qiskit.opflow", "qiskit.circuit.QuantumCircuit.cnot"}
     assert all(c["status"] == "removed" and c["removed_in"] == "2.0.2" for c in cands)
-    assert cands[0]["replacement"] is None  # no docstring hint
-    assert cands[1]["replacement"] == "cx"  # extracted from docstring
+    assert by_symbol["qiskit.opflow"]["replacement"] is None  # no docstring hint
+    assert by_symbol["qiskit.circuit.QuantumCircuit.cnot"]["replacement"] == "cx"
+
+
+def test_candidates_dedupe_by_segment_keeps_shortest():
+    # An inherited method removed from many classes collapses to the most-canonical (shortest)
+    # path; a uniquely-named removal is kept. Detection matches on last segment, so no signal lost.
+    breakages = [
+        {
+            "kind": "OBJECT_REMOVED",
+            "object_path": "qiskit.circuit.library.n_local.TwoLocal.diagonal",
+        },
+        {
+            "kind": "OBJECT_REMOVED",
+            "object_path": "qiskit.circuit.quantumcircuit.QuantumCircuit.diagonal",
+        },
+        {"kind": "OBJECT_REMOVED", "object_path": "qiskit.transpiler.synthesis.graysynth"},
+    ]
+    cands = _candidates_from_breakages(breakages, "2.0.2")  # dedupe on by default
+    assert sorted(c["symbol"] for c in cands) == [
+        "qiskit.circuit.quantumcircuit.QuantumCircuit.diagonal",
+        "qiskit.transpiler.synthesis.graysynth",
+    ]
 
 
 def test_harvest_candidates_verifies_and_promotes(tmp_path):

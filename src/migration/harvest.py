@@ -46,16 +46,23 @@ _REPLACEMENT_PATTERNS = [
     re.compile(r"(?:replaced by|in favor of)\s+`?([A-Za-z_][\w.]*)`?"),
 ]
 _SOURCE_VERIFIED = "sandbox-verified"
+# Common words a loose "use X" pattern grabs by mistake ("use the new API" -> "the").
+_REPLACEMENT_STOPWORDS = {"the", "a", "an", "this", "it", "instead", "use", "using", "either"}
 
 
 def _extract_replacement(text: str | None) -> str | None:
-    """Pull a replacement symbol out of a deprecation message/docstring, if stated."""
+    """Pull a replacement symbol out of a deprecation message/docstring, if stated.
+
+    Skips obvious stopword captures so we don't propose junk; the sandbox would reject it
+    anyway, but filtering here saves a verification probe and keeps the candidate clean.
+    """
     if not text:
         return None
     for pattern in _REPLACEMENT_PATTERNS:
-        m = pattern.search(text)
-        if m:
-            return m.group(1).rstrip("().")
+        for cand in pattern.findall(text):
+            cand = cand.rstrip("().")
+            if len(cand) > 1 and cand.lower() not in _REPLACEMENT_STOPWORDS:
+                return cand
     return None
 
 
@@ -67,18 +74,24 @@ def _is_public(object_path: str) -> bool:
 def _candidates_from_breakages(
     breakages: list[dict],
     removed_in: str,
-    get_docstring=None,
+    get_message=None,
     *,
     public_only: bool = True,
+    dedupe_by_segment: bool = True,
 ) -> list[dict]:
     """Turn normalised Griffe breakages into candidate records (pure; Griffe-free).
 
-    Each breakage is ``{"kind": <name>, "object_path": <dotted>}``. We keep object
-    removals, optionally restrict to the public surface, dedupe by symbol, and attach a
-    replacement hypothesis via ``get_docstring(object_path) -> str | None``.
+    Each breakage is ``{"kind": <name>, "object_path": <dotted>}``. We keep object removals,
+    optionally restrict to the public surface, attach a replacement hypothesis from
+    ``get_message(object_path) -> str | None`` (a deprecation message/docstring, parsed by
+    ``_extract_replacement``), and — by default — collapse same-last-segment duplicates
+    (e.g. an inherited ``diagonal`` removed from a dozen subclasses) to the shortest,
+    most-canonical path. Dedupe is detection-preserving: the table matches on the last
+    segment, so the collapsed record carries the same signal with far less bloat.
     """
     seen: set[str] = set()
-    candidates: list[dict] = []
+    chosen: dict[str, dict] = {}
+    out: list[dict] = []
     for b in breakages:
         if b.get("kind") != "OBJECT_REMOVED":
             continue
@@ -88,16 +101,22 @@ def _candidates_from_breakages(
         if public_only and not _is_public(symbol):
             continue
         seen.add(symbol)
-        doc = get_docstring(symbol) if get_docstring else None
-        candidates.append(
-            {
-                "symbol": symbol,
-                "replacement": _extract_replacement(doc),
-                "status": "removed",
-                "removed_in": removed_in,
-            }
-        )
-    return candidates
+        cand = {
+            "symbol": symbol,
+            "replacement": _extract_replacement(get_message(symbol) if get_message else None),
+            "status": "removed",
+            "removed_in": removed_in,
+        }
+        if not dedupe_by_segment:
+            out.append(cand)
+            continue
+        segment = symbol.rsplit(".", 1)[-1]
+        current = chosen.get(segment)
+        if current is None or symbol.count(".") < current["symbol"].count("."):
+            chosen[segment] = cand
+    if dedupe_by_segment:
+        out = sorted(chosen.values(), key=lambda c: c["symbol"])
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -178,17 +197,53 @@ def mine_candidates(
         for d in (b.as_dict() for b in griffe.find_breaking_changes(old, new))
     ]
 
-    def get_docstring(object_path: str) -> str | None:
+    def _old_obj(object_path: str):
         try:
-            relative = object_path.split(".", 1)[1]  # drop leading "qiskit."
-            obj = old[relative]
-            return obj.docstring.value if obj.docstring else None
+            return old[object_path.split(".", 1)[1]]  # drop leading "qiskit."
+        except Exception:
+            return None
+
+    # Griffe reports a removed *module* as a single breakage, not its contents — so a function
+    # inside a removed module (e.g. graysynth in qiskit.transpiler.synthesis) would be invisible.
+    # Expand each removed module to its public, direct members (one level; nested modules carry
+    # their own breakages or get expanded via theirs).
+    expanded = list(breakages)
+    for b in breakages:
+        if b["kind"] != "OBJECT_REMOVED":
+            continue
+        obj = _old_obj(b["object_path"])
+        if obj is None:
+            continue
+        try:  # Griffe resolves aliases lazily and can raise on access, not just AttributeError.
+            if not getattr(obj, "is_module", False):
+                continue
+            members = [n for n in getattr(obj, "members", {}) if not n.startswith("_")]
+        except Exception:
+            continue
+        for name in members:
+            expanded.append({"kind": "OBJECT_REMOVED", "object_path": f"{b['object_path']}.{name}"})
+
+    def get_message(object_path: str) -> str | None:
+        obj = _old_obj(object_path)
+        if obj is None:
+            return None
+        try:
+            # Prefer Qiskit's structured deprecation decorators over free-text docstrings.
+            for dec in getattr(obj, "decorators", None) or []:
+                value = str(getattr(dec, "value", ""))
+                alias = re.search(r"new_alias\s*=\s*['\"]([A-Za-z_][\w.]*)['\"]", value)
+                if alias:
+                    return f"use {alias.group(1)}"
+                msg = re.search(r"additional_msg\s*=\s*['\"](.*?)['\"]", value)
+                if msg:
+                    return msg.group(1)
+            return obj.docstring.value if getattr(obj, "docstring", None) else None
         except Exception:
             return None
 
     removed_in = new_pkg_spec.partition("==")[2] or "2.0"
     candidates = _candidates_from_breakages(
-        breakages, removed_in, get_docstring, public_only=public_only
+        expanded, removed_in, get_message, public_only=public_only
     )
     return candidates[:limit] if limit else candidates
 
