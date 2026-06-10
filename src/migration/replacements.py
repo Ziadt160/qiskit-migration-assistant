@@ -78,15 +78,76 @@ def propose_replacement(symbol: str, mapping: dict[str, str]) -> str | None:
     return None
 
 
+# --------------------------------------------------------------------------- #
+# Migration-guide rename tables — the method-form renames the flake8 import map misses.
+# --------------------------------------------------------------------------- #
+
+# A markdown table row: `| `old.symbol` | [`new`](/docs/api/qiskit/new.path#anchor) | `.
+_TABLE_ROW = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*(.+?)\s*\|\s*$")
+_LINK = re.compile(r"\[`?([^\]`]+)`?\]\(([^)]+)\)")
+
+
+def _symbol_from_cell(cell: str) -> str | None:
+    """Pull an importable dotted symbol from a table cell (prefer the doc-link URL's path)."""
+    link = _LINK.search(cell)
+    if link:
+        qualified = re.search(r"qiskit[\w.]+", link.group(2).replace("#", "."))
+        if qualified:
+            return qualified.group(0).rstrip(".")
+        return link.group(1)
+    bare = re.search(r"`([^`]+)`", cell)
+    return bare.group(1) if bare else None
+
+
+def guide_files(docs_dir: str) -> list[Path]:
+    """The Qiskit migration-guide markdown files worth scanning for rename tables."""
+    base = Path(docs_dir)
+    files = [base / r for r in ("guides/qiskit-1.0-features.mdx", "guides/qiskit-2.0.mdx")]
+    mg = base / "migration-guides"
+    if mg.is_dir():
+        files += sorted(mg.glob("*.mdx"))
+    return [f for f in files if f.exists()]
+
+
+def load_guide_replacements(paths: list[Path]) -> dict[str, str]:
+    """Parse `old -> new` rename pairs out of the migration guides' markdown tables."""
+    out: dict[str, str] = {}
+    for path in paths:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            row = _TABLE_ROW.match(line)
+            if not row:
+                continue
+            old, new = row.group(1).strip(), _symbol_from_cell(row.group(2))
+            if old and new and "." in old and old != new:
+                out.setdefault(old, new)
+    return out
+
+
+def propose_from_guide(symbol: str, guide_map: dict[str, str]) -> str | None:
+    """Match a harvested symbol against a guide table key by suffix (`...Class.method`)."""
+    for old, new in guide_map.items():
+        if symbol == old or symbol.endswith("." + old):
+            return new
+    return None
+
+
 def enrich_records(
-    records: list[dict], sandbox: Sandbox, mapping: dict[str, str], on_progress=None
+    records: list[dict],
+    sandbox: Sandbox,
+    mapping: dict[str, str],
+    guide_map: dict[str, str] | None = None,
+    on_progress=None,
 ) -> dict:
-    """Attach a flake8-sourced replacement to each record lacking one, iff it imports on the
-    target. Mutates `records` in place; returns ``{proposed, verified}``."""
+    """Attach a sandbox-verified replacement to each record lacking one. Tries the flake8 map
+    first (import moves), then the migration-guide tables (method-form renames); a candidate
+    is attached only if it imports on the target. Mutates `records`; returns ``{proposed,
+    verified}``."""
     proposed = verified = 0
     for i, rec in enumerate(records, 1):
         if not rec.get("replacement"):
             candidate = propose_replacement(rec["symbol"], mapping)
+            if not candidate and guide_map:
+                candidate = propose_from_guide(rec["symbol"], guide_map)
             if candidate:
                 proposed += 1
                 if sandbox.run(make_probe(candidate)).ok:  # replacement imports clean on target
@@ -104,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
         "--in", dest="path", default="src/migration/data/harvested_deprecations.json"
     )
     parser.add_argument("--sandbox-backend", default="docker", help="local | docker")
+    parser.add_argument("--docs-dir", default="documentation/docs", help="Qiskit docs checkout")
     args = parser.parse_args(argv)
 
     sandbox = get_sandbox(args.sandbox_backend)
@@ -113,14 +175,19 @@ def main(argv: list[str] | None = None) -> int:
     path = Path(args.path)
     records = json.loads(path.read_text(encoding="utf-8"))
     mapping = load_flake8_map()
-    print(f"Enriching {len(records)} records against {len(mapping)} flake8 entries...", flush=True)
+    guide_map = load_guide_replacements(guide_files(args.docs_dir))
+    print(
+        f"Enriching {len(records)} records against {len(mapping)} flake8 + "
+        f"{len(guide_map)} guide-table entries...",
+        flush=True,
+    )
 
     def on_progress(i: int, total: int, verified: int) -> None:
         if i % 50 == 0 or i == total:
             path.write_text(json.dumps(records, indent=2) + "\n", encoding="utf-8")  # checkpoint
             print(f"  [{i}/{total}] replacements verified: {verified}", flush=True)
 
-    stats = enrich_records(records, sandbox, mapping, on_progress=on_progress)
+    stats = enrich_records(records, sandbox, mapping, guide_map=guide_map, on_progress=on_progress)
     path.write_text(json.dumps(records, indent=2) + "\n", encoding="utf-8")
     have = sum(1 for r in records if r.get("replacement"))
     print(

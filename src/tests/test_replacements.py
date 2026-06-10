@@ -7,7 +7,12 @@ member-wise rename construction and the verify-before-attach gate.
 from __future__ import annotations
 
 from src.migration.models import SandboxReport
-from src.migration.replacements import enrich_records, propose_replacement
+from src.migration.replacements import (
+    enrich_records,
+    load_guide_replacements,
+    propose_from_guide,
+    propose_replacement,
+)
 
 
 class FakeSandbox:
@@ -40,6 +45,43 @@ def test_propose_moved_to_and_no_match():
     assert propose_replacement("qiskit.x.Y", m) == "qiskit.synthesis.Y"
     assert propose_replacement("qiskit.unrelated", m) is None
     assert propose_replacement("qiskit.anything", {}) is None
+
+
+def test_load_guide_replacements_parses_table(tmp_path):
+    md = tmp_path / "guide.mdx"
+    md.write_text(
+        "Some prose.\n\n"
+        "| Removed | Alternative |\n"
+        "|---|---|\n"
+        "| `QuantumCircuit.cnot` | [`QuantumCircuit.cx`](qiskit.circuit.QuantumCircuit#cx) |\n"
+        "| `QuantumCircuit.diagonal` | [`DiagonalGate`](qiskit.circuit.library.DiagonalGate) |\n"
+        "| not-a-symbol | skip |\n",
+        encoding="utf-8",
+    )
+    guide = load_guide_replacements([md])
+    # the link URL gives the full importable path (anchor -> trailing segment)
+    assert guide["QuantumCircuit.cnot"] == "qiskit.circuit.QuantumCircuit.cx"
+    assert guide["QuantumCircuit.diagonal"] == "qiskit.circuit.library.DiagonalGate"
+    assert "not-a-symbol" not in guide
+
+
+def test_propose_from_guide_suffix_match():
+    guide = {"QuantumCircuit.cnot": "qiskit.circuit.QuantumCircuit.cx"}
+    # harvested symbols carry the full internal path; match the table key by suffix
+    assert (
+        propose_from_guide("qiskit.circuit.quantumcircuit.QuantumCircuit.cnot", guide)
+        == "qiskit.circuit.QuantumCircuit.cx"
+    )
+    assert propose_from_guide("qiskit.circuit.QuantumCircuit.cx", guide) is None
+
+
+def test_enrich_falls_back_to_guide_map():
+    guide = {"QuantumCircuit.cnot": "qiskit.circuit.QuantumCircuit.cx"}
+    records = [{"symbol": "qiskit.circuit.quantumcircuit.QuantumCircuit.cnot", "replacement": None}]
+    sandbox = FakeSandbox(importable={"qiskit.circuit.QuantumCircuit.cx"})
+    stats = enrich_records(records, sandbox, {}, guide_map=guide)  # empty flake8 map
+    assert stats == {"proposed": 1, "verified": 1}
+    assert records[0]["replacement"] == "qiskit.circuit.QuantumCircuit.cx"
 
 
 def test_enrich_attaches_only_verified_replacements():

@@ -1192,8 +1192,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.assign_parameters",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.assign_parameters).",
     "source": "sandbox-verified"
   },
   {
@@ -1246,8 +1246,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.cx",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.cx).",
     "source": "sandbox-verified"
   },
   {
@@ -1255,8 +1255,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.DiagonalGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.DiagonalGate).",
     "source": "sandbox-verified"
   },
   {
@@ -1273,8 +1273,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.cswap",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.cswap).",
     "source": "sandbox-verified"
   },
   {
@@ -1282,8 +1282,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.HamiltonianGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.HamiltonianGate).",
     "source": "sandbox-verified"
   },
   {
@@ -1309,8 +1309,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.id",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.id).",
     "source": "sandbox-verified"
   },
   {
@@ -1318,8 +1318,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.Isometry",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.Isometry).",
     "source": "sandbox-verified"
   },
   {
@@ -1327,8 +1327,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.mcx",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.mcx).",
     "source": "sandbox-verified"
   },
   {
@@ -1345,8 +1345,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.unitary",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.unitary).",
     "source": "sandbox-verified"
   },
   {
@@ -1354,8 +1354,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.QuantumCircuit.ccx",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.QuantumCircuit.ccx).",
     "source": "sandbox-verified"
   },
   {
@@ -1363,8 +1363,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCGate).",
     "source": "sandbox-verified"
   },
   {
@@ -1372,8 +1372,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRXGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRXGate).",
     "source": "sandbox-verified"
   },
   {
@@ -1381,8 +1381,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRYGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRYGate).",
     "source": "sandbox-verified"
   },
   {
@@ -1390,8 +1390,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRZGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRZGate).",
     "source": "sandbox-verified"
   },
   {
