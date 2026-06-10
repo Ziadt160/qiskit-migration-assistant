@@ -43,8 +43,9 @@ local = ["sentence-transformers>=3.0", "torch>=2.2"]
 postgres = ["psycopg[binary]>=3.1"]
 # RAG evaluation harness (heavy; only needed to run `make eval`).
 eval = ["ragas>=0.1.7", "datasets>=2.19"]
-# Knowledge harvester (src/migration/harvest.py): Griffe API-diff between Qiskit versions.
-harvest = ["griffe>=1.0"]
+# Knowledge harvester (src/migration/harvest.py + replacements.py): Griffe API-diff between
+# Qiskit versions, plus the community flake8 migration map for replacement hypotheses.
+harvest = ["griffe>=1.0", "flake8-qiskit-migration>=0.4"]
 # Local dev tooling.
 dev = [
   "pytest>=8.2",
