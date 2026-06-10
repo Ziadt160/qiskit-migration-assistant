@@ -250,5 +250,23 @@
     "replacement": "qiskit.quantum_info.PauliList",
     "note": "PauliTable (and StabilizerTable) were deprecated in 0.43 and removed in 1.0. Use PauliList from qiskit.quantum_info instead.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.diagonal",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "qiskit.circuit.library.DiagonalGate",
+    "note": "The QuantumCircuit.diagonal() method was removed in 1.0. Append a DiagonalGate from qiskit.circuit.library instead: qc.append(DiagonalGate(diag), qubits).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.squ",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.unitary",
+    "note": "The QuantumCircuit.squ() single-qubit-unitary method was removed in 1.0. Use QuantumCircuit.unitary() instead.",
+    "source": "curated-seed"
   }
 ]

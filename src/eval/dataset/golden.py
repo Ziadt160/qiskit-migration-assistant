@@ -444,6 +444,39 @@ GOLDEN: list[dict] = [
             "from qiskit.quantum_info import PauliList\ntable = PauliList(['XX', 'ZZ'])\n"
         ),
     },
+    # Graduated from the adversarial frontier (2026-06-10): method-form removals the
+    # auto-harvested tier can't match (full-symbol only), now curated into the seed.
+    {
+        "id": "gate-diagonal",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.diagonal([1, -1, -1, 1], [0, 1])\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.diagonal"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\n"
+            "from qiskit.circuit.library import DiagonalGate\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.append(DiagonalGate([1, -1, -1, 1]), [0, 1])\n"
+        ),
+    },
+    {
+        "id": "gate-squ",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(1)\n"
+            "qc.squ([[0, 1], [1, 0]], 0)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.squ"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(1)\n"
+            "qc.unitary([[0, 1], [1, 0]], [0])\n"
+        ),
+    },
 ]
 
 

@@ -31,42 +31,8 @@ work unchanged) plus a `category` tag used for the per-bucket coverage report.
 from __future__ import annotations
 
 ADVERSARIAL: list[dict] = [
-    # --- removed QuantumCircuit gate methods (append the gate instead) ------ #
-    {
-        "id": "gate-diagonal",
-        "category": "removed-gate-method",
-        "source_version": "0.45",
-        "old_code": (
-            "from qiskit import QuantumCircuit\n"
-            "qc = QuantumCircuit(2)\n"
-            "qc.diagonal([1, -1, -1, 1], [0, 1])\n"
-        ),
-        "expected_apis_changed": ["QuantumCircuit.diagonal"],
-        "reference_ported_code": (
-            "from qiskit import QuantumCircuit\n"
-            "from qiskit.circuit.library import DiagonalGate\n"
-            "qc = QuantumCircuit(2)\n"
-            "qc.append(DiagonalGate([1, -1, -1, 1]), [0, 1])\n"
-        ),
-        "source": "documentation/docs/guides/qiskit-1.0-features.mdx (QuantumCircuit gates)",
-    },
-    {
-        "id": "gate-squ",
-        "category": "removed-gate-method",
-        "source_version": "0.45",
-        "old_code": (
-            "from qiskit import QuantumCircuit\n"
-            "qc = QuantumCircuit(1)\n"
-            "qc.squ([[0, 1], [1, 0]], 0)\n"
-        ),
-        "expected_apis_changed": ["QuantumCircuit.squ"],
-        "reference_ported_code": (
-            "from qiskit import QuantumCircuit\n"
-            "qc = QuantumCircuit(1)\n"
-            "qc.unitary([[0, 1], [1, 0]], [0])\n"
-        ),
-        "source": "documentation/docs/guides/qiskit-1.0-features.mdx (QuantumCircuit gates)",
-    },
+    # NOTE: gate-diagonal and gate-squ graduated into golden.py once the seed covered them
+    # (2026-06-10) — the held-out invariant requires removing them here.
     # --- removed / relocated functions ------------------------------------- #
     {
         "id": "converters-ast-to-dag",

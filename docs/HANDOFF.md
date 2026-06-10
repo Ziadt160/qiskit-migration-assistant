@@ -8,15 +8,15 @@
 
 A production-grade **RAG system that ports Qiskit code from older versions to the latest (2.x)**. You paste old Qiskit code (or point it at a file/folder) and it returns migrated code plus a cited, per-change rationale — grounded in the official deprecation/release-note record and validated by executing the result against `qiskit==2.x`.
 
-**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes (113); lint clean. **The deprecation table now auto-grows:** 28 curated seed records + **1,153 sandbox-verified auto-harvested** records (full-symbol matched, **102 with sandbox-verified replacements**). **Open-sourced** — public on GitHub at **https://github.com/Ziadt160/qiskit-migration-assistant** (branch `main`); MIT licensed; git author `Ziad <ziadt160@gmail.com>`. Push uses Windows Git Credential Manager (no `gh` CLI installed).
+**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes (116); lint clean. **The deprecation table now auto-grows:** 30 curated seed records + **1,153 sandbox-verified auto-harvested** records (full-symbol matched, **102 with sandbox-verified replacements**). **Open-sourced** — public on GitHub at **https://github.com/Ziadt160/qiskit-migration-assistant** (branch `main`); MIT licensed; git author `Ziad <ziadt160@gmail.com>`. Push uses Windows Git Credential Manager (no `gh` CLI installed).
 
-**Key results (golden eval — now 27 cases, covering every curated deprecation except `qiskit.pulse`):**
+**Key results (golden eval — now 29 cases, covering every curated deprecation except `qiskit.pulse`):**
 | Metric | Score | Tier |
 |---|---|---|
-| Deprecation-detection recall | 1.00 (30/30) | deterministic / offline (`--seed-only`) |
-| Reference cleanliness | 1.00 (27/27) | deterministic / offline (`--seed-only`) |
-| **References executable on Qiskit 2.2.3** | **13/14** | Docker; measured on the pre-graduation 14 — the 13 newly-graduated cases are **not yet Docker-executed** |
-| Held-out adversarial coverage | gap-probe (currently 0/5 frontier) | deterministic / offline (`--adversarial`, non-gating) |
+| Deprecation-detection recall | 1.00 (32/32) | deterministic / offline (`--seed-only`) |
+| Reference cleanliness | 1.00 (29/29) | deterministic / offline (`--seed-only`) |
+| **References executable on Qiskit 2.2.3** | **13/14** | Docker; measured on the pre-graduation 14 — the newly-graduated cases are **not yet Docker-executed** |
+| Held-out adversarial coverage | gap-probe (currently 3/3 frontier — harvested tier covers it; refill to keep probing) | deterministic / offline (`--adversarial`, non-gating) |
 | Retrieval recall / context-hit | 1.00 / 1.00 | live, measured on original 8 |
 | E2E validation / changes-applied (local qwen2.5-coder) | 1.00 / 1.00 | live, measured on original 8 |
 
@@ -242,7 +242,7 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 - **Precision catch + fix (the gate earned its keep).** Auto-trusting all 1,153 with last-segment matching **broke cleanliness 1.0 → 0.667**: harvested removals collide by *name* with current APIs (`qiskit.pulse.cx` vs live `QuantumCircuit.cx`, `qiskit.algorithms.VQE` vs `qiskit_algorithms.VQE`, …). Fix: the **`sandbox-verified` tier matches by FULL SYMBOL only**, never last-segment (`DeprecationStore.lookup`) — names aren't hand-vetted like the seed. **Validated: gate stays PASS (detection 30/30, cleanliness 1.000), adversarial diagnostic 0/5 → 3/5** (import-form removals auto-detected; the 2 method-form ones, `diagonal`/`squ`, correctly stay seed-growth candidates). **109 unit tests pass.** Replacements: **0/1,153** — extraction remains the one unsolved piece.
 
 **Top next moves (prioritized — full rationale in §12):**
-1. **Curate the 2 method-form frontier misses + extend coverage further.** Replacement extraction landed (`src/migration/replacements.py`, two sources, both sandbox-verified): the **`flake8-qiskit-migration`** import map (member-wise rename → **88**) + the **migration-guide rename tables** (URL-derived symbols, suffix match → **14** method renames). Result: **0 → 102 verified replacements**. Note `QuantumCircuit.diagonal`→DiagonalGate and `squ`→unitary now have verified replacements, so **curating those 2 frontier misses into the seed** (they need the last-segment matching the auto-tier withholds → would take the adversarial frontier 3/5 → 5/5 in the gated set) is now trivial. Further coverage: true vector-RAG over the guides for unstructured prose guidance (same verify gate) — lower ROI, most remaining records have no documented replacement. *(Re-running the harvest is now crash-safe + resumable via `--out`.)*
+1. **Refill the adversarial probe (it's at 0-gap) + extend replacement coverage.** The loop fully cycled: replacement extraction landed (`src/migration/replacements.py`, two sandbox-verified sources — flake8 import map → 88, migration-guide rename tables → 14; **0 → 102 replacements**), and the last 2 method-form frontier misses (`diagonal`/`squ`) were **graduated into the seed + golden** (golden 27→29, detection 32/32). The adversarial diagnostic now reads **3/3 (gap 0)** — the harvested tier covers the remaining frontier — so **refill `adversarial.py` with new held-out cases the harvest *doesn't* reach** to keep the probe measuring a real gap. Further replacement coverage: true vector-RAG over the guides for unstructured prose (same verify gate) — lower ROI, most remaining records have no documented replacement. *(Re-running the harvest is now crash-safe + resumable via `--out`.)*
 2. **Local vector-store option + shippable index** — makes "fully local & free" literally true (today Pinecone is the one piece a fresh cloner can't run).
 3. **Sandbox container cleanup on timeout** — small fix; closes the only real operational hazard (orphaned containers).
 4. **Behavioral-equivalence check** (old-on-old vs new-on-new) — the standout differentiator; sandbox infra already exists.
