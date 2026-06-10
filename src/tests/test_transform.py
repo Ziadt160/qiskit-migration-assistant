@@ -146,3 +146,42 @@ def test_self_repair_gives_up_after_max_repairs(store):
 
     assert result.repair_attempts == 2
     assert not result.validation.passed
+
+
+def test_safety_net_applies_known_replacement(store):
+    # The model never fixes the leaked import; the deterministic safety net does, and the
+    # sandbox confirms the patched code runs -> it gets adopted.
+    bad = "from qiskit.algorithms.optimizers import COBYLA\noptimizer = COBYLA()\n"
+    gen = _FakeGenerator(bad)
+    sandbox = _FakeSandbox(
+        [
+            SandboxReport(backend="fake", ok=False, error_type="ModuleNotFoundError"),  # bad fails
+            SandboxReport(backend="fake", ok=True, returncode=0),  # patched runs clean
+        ]
+    )
+    transformer = MigrationTransformer(
+        store, _FakeRetriever(), gen, target_version="2.2", sandbox=sandbox, max_repairs=0
+    )
+
+    result = transformer.transform(bad)
+
+    assert "qiskit_algorithms.optimizers" in result.ported_code
+    assert "qiskit.algorithms" not in result.ported_code
+    assert result.execution is not None and result.execution.ok
+    assert result.repair_attempts == 0  # the LLM never fixed it; the safety net did
+
+
+def test_safety_net_rejects_patch_that_does_not_run(store):
+    # A non-drop-in replacement (opflow -> quantum_info is not a literal rename) must NOT be
+    # adopted: the patched code still fails the sandbox, so the original output is kept.
+    bad = "from qiskit.opflow import X, Z\nop = (X ^ X) + (Z ^ Z)\n"
+    gen = _FakeGenerator(bad)
+    sandbox = _FakeSandbox([SandboxReport(backend="fake", ok=False, error_type="ImportError")])
+    transformer = MigrationTransformer(
+        store, _FakeRetriever(), gen, target_version="2.2", sandbox=sandbox, max_repairs=0
+    )
+
+    result = transformer.transform(bad)
+
+    assert "qiskit.opflow" in result.ported_code  # patch rejected; original kept
+    assert result.execution is not None and not result.execution.ok

@@ -9,6 +9,7 @@ injected so the pipeline can be unit-tested with fakes.
 from __future__ import annotations
 
 import logging
+import re
 
 from src.config import get_settings
 from src.migration.deprecations import DeprecationRecord, DeprecationStore
@@ -45,6 +46,28 @@ def _build_feedback(execution: SandboxReport | None, report: ValidationReport) -
     if not report.syntax_ok:
         parts.append("The ported code does not parse as valid Python.")
     return "\n\n".join(parts) or "(none)"
+
+
+_DOTTED_IDENT = re.compile(r"[A-Za-z_][\w.]*\Z")
+
+
+def _apply_known_replacements(code: str, report: ValidationReport, store: DeprecationStore) -> str:
+    """Deterministically rewrite leaked deprecated symbols using the table's known
+    replacements — an import-path rename (``qiskit.algorithms`` -> ``qiskit_algorithms``) or a
+    method rename (``.bind_parameters`` -> ``.assign_parameters``). The caller adopts the
+    result only if it then validates and runs, so a non-drop-in replacement is harmless.
+    """
+    patched = code
+    for symbol in report.deprecated_symbols:
+        rec = next((r for r in store.lookup({symbol}) if r.symbol == symbol), None)
+        replacement = rec.replacement if rec else None
+        if not replacement or not _DOTTED_IDENT.match(replacement):
+            continue
+        patched = patched.replace(symbol, replacement)  # import-path rename
+        old_last, new_last = symbol.rsplit(".", 1)[-1], replacement.rsplit(".", 1)[-1]
+        if old_last != new_last and len(old_last) > 3:  # method/attribute rename
+            patched = patched.replace("." + old_last, "." + new_last)
+    return patched
 
 
 def find_deprecations(
@@ -124,6 +147,20 @@ class MigrationTransformer:
                 code, deps, chunks, source_version, feedback=feedback
             )
             report = validate_output(llm_out.ported_code, self.store, self.target_version)
+
+        # Deterministic safety net: if the model left a known-deprecated symbol the table has a
+        # replacement for, apply it directly — and adopt it only if the result then validates
+        # and runs, so a non-drop-in replacement can never make the output worse.
+        healthy = report.passed and (execution is None or execution.ok)
+        if not healthy and report.deprecated_symbols:
+            patched = _apply_known_replacements(llm_out.ported_code, report, self.store)
+            if patched != llm_out.ported_code:
+                patched_report = validate_output(patched, self.store, self.target_version)
+                patched_exec = self.sandbox.run(patched) if self.sandbox else None
+                if patched_report.passed and (patched_exec is None or patched_exec.ok):
+                    llm_out.ported_code = patched
+                    report, execution = patched_report, patched_exec
+                    logger.info("safety net: applied known replacements deterministically")
 
         return MigrationResult(
             target_version=self.target_version,
