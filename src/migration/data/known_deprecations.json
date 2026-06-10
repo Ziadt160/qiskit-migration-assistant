@@ -133,5 +133,122 @@
     "replacement": "backend.run",
     "note": "Bare execute(circuit, backend) (imported from qiskit) was removed in 1.0. Use transpile(circuit, backend) then backend.run(transpiled), or the Sampler/Estimator primitives.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.utils.QuantumInstance",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "qiskit.primitives",
+    "note": "QuantumInstance was removed in 1.0. Algorithms now take primitives directly: use the Sampler/Estimator primitives (e.g. StatevectorSampler, StatevectorEstimator) instead of wrapping a backend in a QuantumInstance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms",
+    "note": "qiskit.aqua was removed during the metapackage dismantling (well before 1.0). Its contents split into application packages (qiskit-nature/optimization/machine-learning/finance); general algorithms now live in the standalone qiskit-algorithms package.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.ignis",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_experiments",
+    "note": "qiskit.ignis was removed during the metapackage dismantling. Characterization, verification and error-mitigation tooling moved to the standalone qiskit-experiments package (and mthree for measurement mitigation).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.providers.aer",
+    "status": "moved",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit_aer",
+    "note": "Importing from qiskit.providers.aer is no longer possible in 1.0. Install qiskit-aer and import from the top-level qiskit_aer package instead (drop-in): from qiskit_aer import AerSimulator.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.test.mock",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "qiskit.providers.fake_provider.GenericBackendV2",
+    "note": "The legacy qiskit.test.mock fake backends were removed. Device snapshot fakes moved to qiskit_ibm_runtime.fake_provider; for a configurable Qiskit-native fake use GenericBackendV2 from qiskit.providers.fake_provider.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.tools.visualization",
+    "status": "moved",
+    "since_version": "0.8",
+    "removed_in": "1.0",
+    "replacement": "qiskit.visualization",
+    "note": "The qiskit.tools.visualization legacy redirect was removed in 1.0. The visualization module has lived at qiskit.visualization since 0.8.0; update imports accordingly.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.tools.parallel_map",
+    "status": "moved",
+    "since_version": "0.46",
+    "removed_in": "1.0",
+    "replacement": "qiskit.utils.parallel_map",
+    "note": "qiskit.tools was removed in 1.0; parallel_map was relocated to qiskit.utils. Import it as: from qiskit.utils import parallel_map.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.cnot",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.cx",
+    "note": "The QuantumCircuit.cnot() alias was removed in 1.0. Use QuantumCircuit.cx() to append a controlled-X gate.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.toffoli",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.ccx",
+    "note": "The QuantumCircuit.toffoli() alias was removed in 1.0. Use QuantumCircuit.ccx() (controlled-controlled-X).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.mct",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.mcx",
+    "note": "The QuantumCircuit.mct() alias (multi-controlled Toffoli) was removed in 1.0. Use QuantumCircuit.mcx().",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.fredkin",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.cswap",
+    "note": "The QuantumCircuit.fredkin() alias was removed in 1.0. Use QuantumCircuit.cswap() (controlled-SWAP).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "QuantumCircuit.snapshot",
+    "status": "removed",
+    "since_version": "0.45",
+    "removed_in": "1.0",
+    "replacement": "QuantumCircuit.save_statevector",
+    "note": "QuantumCircuit.snapshot() and the Snapshot instruction were removed in 1.0. Use qiskit-aer's save instructions instead, e.g. QuantumCircuit.save_statevector() after importing qiskit_aer.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.quantum_info.PauliTable",
+    "status": "removed",
+    "since_version": "0.43",
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.PauliList",
+    "note": "PauliTable (and StabilizerTable) were deprecated in 0.43 and removed in 1.0. Use PauliList from qiskit.quantum_info instead.",
+    "source": "curated-seed"
   }
 ]

@@ -49,6 +49,10 @@ _GENERIC_SEGMENTS = {
     "get",
     "set",
     "value",
+    # Relocated-but-same-named: the old `qiskit.tools.parallel_map` and the modern
+    # `qiskit.utils.parallel_map` share a last segment. Match the old one by its full
+    # symbol only, so the modern replacement isn't flagged as still-deprecated.
+    "parallel_map",
 }
 
 # Core APIs that are current in the target version and must NEVER be reported as
@@ -346,9 +350,13 @@ class DeprecationStore:
         return sorted(best.values(), key=_score, reverse=True)
 
 
+# Trust tiers: hand-curated outranks sandbox-verified (auto-harvested but executed
+# against the target), which outranks the noisier heuristic parser (rank 0).
+_SOURCE_RANK = {"curated-seed": 10, "sandbox-verified": 5}
+
+
 def _score(rec: DeprecationRecord) -> int:
-    seed_bonus = 10 if rec.source == "curated-seed" else 0
-    return seed_bonus + _STATUS_RANK.get(rec.status, 0)
+    return _SOURCE_RANK.get(rec.source, 0) + _STATUS_RANK.get(rec.status, 0)
 
 
 def build_deprecation_store(docs_dir: str, db_path: str = "app.db") -> int:
