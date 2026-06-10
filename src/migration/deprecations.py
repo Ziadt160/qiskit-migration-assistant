@@ -25,7 +25,13 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _SEED_PATH = Path(__file__).parent / "data" / "known_deprecations.json"
+_HARVESTED_PATH = Path(__file__).parent / "data" / "harvested_deprecations.json"
 _RELEVANT_DOC_TYPES = {"release_note", "migration_guide"}
+
+# Source tier for auto-harvested, sandbox-verified records. Because their names are NOT
+# hand-vetted against collisions with current APIs, they only ever match by full symbol
+# (never by last segment alone) — see DeprecationStore.lookup.
+_SANDBOX_VERIFIED = "sandbox-verified"
 
 # Status ranking for choosing the best record when several match a symbol.
 _STATUS_RANK = {"removed": 3, "moved": 3, "changed": 2, "deprecated": 1}
@@ -49,6 +55,10 @@ _GENERIC_SEGMENTS = {
     "get",
     "set",
     "value",
+    # Relocated-but-same-named: the old `qiskit.tools.parallel_map` and the modern
+    # `qiskit.utils.parallel_map` share a last segment. Match the old one by its full
+    # symbol only, so the modern replacement isn't flagged as still-deprecated.
+    "parallel_map",
 }
 
 # Core APIs that are current in the target version and must NEVER be reported as
@@ -245,6 +255,18 @@ def load_seed_records() -> list[DeprecationRecord]:
     return [DeprecationRecord(**row) for row in data]
 
 
+def load_harvested_records() -> list[DeprecationRecord]:
+    """Auto-harvested, sandbox-verified records (empty if the harvest has not been run).
+
+    Produced by `src/migration/harvest.py`; loaded alongside the curated seed so the table
+    grows automatically, but matched conservatively (full symbol only) in `lookup`.
+    """
+    if not _HARVESTED_PATH.exists():
+        return []
+    data = json.loads(_HARVESTED_PATH.read_text(encoding="utf-8"))
+    return [DeprecationRecord(**row) for row in data]
+
+
 class DeprecationStore:
     """SQLite-backed store of deprecation records, queryable by symbol."""
 
@@ -313,9 +335,11 @@ class DeprecationStore:
     def lookup(self, symbols: Iterable[str]) -> list[DeprecationRecord]:
         """Return the best deprecation record for each matching symbol.
 
-        Matches on the full symbol or its last segment, then keeps one record per
-        symbol, preferring authoritative (seed) and higher-severity (removed/moved)
-        entries.
+        Curated/parser records match on the full symbol or its last segment; auto-harvested
+        (`sandbox-verified`) records match on the full symbol ONLY, since their names are not
+        hand-vetted against collisions with current APIs (e.g. a removed `qiskit.pulse.cx`
+        must never flag the live `QuantumCircuit.cx`). Then keeps one record per symbol,
+        preferring authoritative (seed) and higher-severity (removed/moved) entries.
         """
         keys = {k for k in symbols if k}
         if not keys:
@@ -340,15 +364,22 @@ class DeprecationStore:
             # Never report a known-current core API as deprecated.
             if rec.last_segment in _CURRENT_ALLOWLIST or rec.symbol in _CURRENT_ALLOWLIST:
                 continue
+            # Auto-harvested records may only match by full symbol, never last segment alone.
+            if rec.source == _SANDBOX_VERIFIED and rec.symbol not in keys:
+                continue
             current = best.get(rec.symbol)
             if current is None or _score(rec) > _score(current):
                 best[rec.symbol] = rec
         return sorted(best.values(), key=_score, reverse=True)
 
 
+# Trust tiers: hand-curated outranks sandbox-verified (auto-harvested but executed
+# against the target), which outranks the noisier heuristic parser (rank 0).
+_SOURCE_RANK = {"curated-seed": 10, "sandbox-verified": 5}
+
+
 def _score(rec: DeprecationRecord) -> int:
-    seed_bonus = 10 if rec.source == "curated-seed" else 0
-    return seed_bonus + _STATUS_RANK.get(rec.status, 0)
+    return _SOURCE_RANK.get(rec.source, 0) + _STATUS_RANK.get(rec.status, 0)
 
 
 def build_deprecation_store(docs_dir: str, db_path: str = "app.db") -> int:
@@ -363,6 +394,7 @@ def build_deprecation_store(docs_dir: str, db_path: str = "app.db") -> int:
     store.create()
 
     records: list[DeprecationRecord] = list(load_seed_records())
+    records.extend(load_harvested_records())  # auto-grown, sandbox-verified tier
 
     loader = QiskitMarkdownLoader(docs_dir, current_version=get_settings().qiskit_target_version)
     for doc in loader.load(doc_types=_RELEVANT_DOC_TYPES):

@@ -262,6 +262,221 @@ GOLDEN: list[dict] = [
             "print(counts)\n"
         ),
     },
+    # ----------------------------------------------------------------------- #
+    # Graduated from the held-out adversarial set (2026-06-10): these APIs were
+    # the measured 0/13 coverage gap; once curated into the seed they became
+    # gate-locked regression cases. See dataset/adversarial.py for the loop.
+    # ----------------------------------------------------------------------- #
+    {
+        "id": "aqua-vqe",
+        "source_version": "0.20",
+        "old_code": (
+            "from qiskit.aqua.algorithms import VQE\n"
+            "from qiskit.aqua.components.optimizers import COBYLA\n"
+            "optimizer = COBYLA(maxiter=100)\n"
+        ),
+        "expected_apis_changed": ["qiskit.aqua"],
+        "reference_ported_code": (
+            "from qiskit_algorithms import VQE\n"
+            "from qiskit_algorithms.optimizers import COBYLA\n"
+            "optimizer = COBYLA(maxiter=100)\n"
+        ),
+    },
+    {
+        "id": "ignis-tomography",
+        "source_version": "0.23",
+        "old_code": (
+            "from qiskit.ignis.verification.tomography import StateTomographyFitter\n"
+            "fitter = StateTomographyFitter(result, qcs)\n"
+        ),
+        "expected_apis_changed": ["qiskit.ignis"],
+        "reference_ported_code": (
+            "from qiskit_experiments.library import StateTomography\n"
+            "experiment = StateTomography(qc)\n"
+        ),
+    },
+    {
+        "id": "providers-aer-path",
+        "source_version": "0.46",
+        "old_code": (
+            "from qiskit import QuantumCircuit, transpile\n"
+            "from qiskit.providers.aer import AerSimulator\n"
+            "qc = QuantumCircuit(1, 1)\n"
+            "qc.h(0)\n"
+            "qc.measure(0, 0)\n"
+            "backend = AerSimulator()\n"
+            "result = backend.run(transpile(qc, backend)).result()\n"
+        ),
+        "expected_apis_changed": ["qiskit.providers.aer"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit, transpile\n"
+            "from qiskit_aer import AerSimulator\n"
+            "qc = QuantumCircuit(1, 1)\n"
+            "qc.h(0)\n"
+            "qc.measure(0, 0)\n"
+            "backend = AerSimulator()\n"
+            "result = backend.run(transpile(qc, backend)).result()\n"
+        ),
+    },
+    {
+        "id": "test-mock-fake-backend",
+        "source_version": "0.45",
+        "old_code": "from qiskit.test.mock import FakeVigo\nbackend = FakeVigo()\n",
+        "expected_apis_changed": ["qiskit.test.mock"],
+        "reference_ported_code": (
+            "from qiskit.providers.fake_provider import GenericBackendV2\n"
+            "backend = GenericBackendV2(num_qubits=5)\n"
+        ),
+    },
+    {
+        "id": "tools-visualization",
+        "source_version": "0.46",
+        "old_code": (
+            "from qiskit.tools.visualization import plot_histogram\n"
+            "counts = {'00': 500, '11': 524}\n"
+            "plot_histogram(counts)\n"
+        ),
+        "expected_apis_changed": ["qiskit.tools.visualization"],
+        "reference_ported_code": (
+            "from qiskit.visualization import plot_histogram\n"
+            "counts = {'00': 500, '11': 524}\n"
+            "plot_histogram(counts)\n"
+        ),
+    },
+    {
+        "id": "tools-parallel-map",
+        "source_version": "0.46",
+        "old_code": (
+            "from qiskit.tools import parallel_map\n"
+            "out = parallel_map(lambda x: x * 2, [1, 2, 3])\n"
+        ),
+        "expected_apis_changed": ["qiskit.tools.parallel_map"],
+        "reference_ported_code": (
+            "from qiskit.utils import parallel_map\n"
+            "out = parallel_map(lambda x: x * 2, [1, 2, 3])\n"
+        ),
+    },
+    {
+        "id": "gate-cnot",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cnot(0, 1)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.cnot"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\n"
+        ),
+    },
+    {
+        "id": "gate-toffoli",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(3)\nqc.toffoli(0, 1, 2)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.toffoli"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(3)\nqc.ccx(0, 1, 2)\n"
+        ),
+    },
+    {
+        "id": "gate-mct",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(4)\nqc.mct([0, 1, 2], 3)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.mct"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(4)\nqc.mcx([0, 1, 2], 3)\n"
+        ),
+    },
+    {
+        "id": "gate-fredkin",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(3)\nqc.fredkin(0, 1, 2)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.fredkin"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\nqc = QuantumCircuit(3)\nqc.cswap(0, 1, 2)\n"
+        ),
+    },
+    {
+        "id": "circuit-snapshot",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.h(0)\n"
+            "qc.snapshot('snap1')\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.snapshot"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\n"
+            "from qiskit_aer import AerSimulator\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.h(0)\n"
+            "qc.save_statevector()\n"
+        ),
+    },
+    {
+        "id": "quantum-instance",
+        "source_version": "0.46",
+        "old_code": (
+            "from qiskit.utils import QuantumInstance\n"
+            "from qiskit_aer import AerSimulator\n"
+            "backend = AerSimulator()\n"
+            "qi = QuantumInstance(backend, shots=1024)\n"
+        ),
+        "expected_apis_changed": ["qiskit.utils.QuantumInstance"],
+        "reference_ported_code": (
+            "from qiskit.primitives import StatevectorSampler\nsampler = StatevectorSampler()\n"
+        ),
+    },
+    {
+        "id": "pauli-table",
+        "source_version": "0.43",
+        "old_code": (
+            "from qiskit.quantum_info import PauliTable\n"
+            "table = PauliTable.from_labels(['XX', 'ZZ'])\n"
+        ),
+        "expected_apis_changed": ["qiskit.quantum_info.PauliTable"],
+        "reference_ported_code": (
+            "from qiskit.quantum_info import PauliList\ntable = PauliList(['XX', 'ZZ'])\n"
+        ),
+    },
+    # Graduated from the adversarial frontier (2026-06-10): method-form removals the
+    # auto-harvested tier can't match (full-symbol only), now curated into the seed.
+    {
+        "id": "gate-diagonal",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.diagonal([1, -1, -1, 1], [0, 1])\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.diagonal"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\n"
+            "from qiskit.circuit.library import DiagonalGate\n"
+            "qc = QuantumCircuit(2)\n"
+            "qc.append(DiagonalGate([1, -1, -1, 1]), [0, 1])\n"
+        ),
+    },
+    {
+        "id": "gate-squ",
+        "source_version": "0.45",
+        "old_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(1)\n"
+            "qc.squ([[0, 1], [1, 0]], 0)\n"
+        ),
+        "expected_apis_changed": ["QuantumCircuit.squ"],
+        "reference_ported_code": (
+            "from qiskit import QuantumCircuit\n"
+            "qc = QuantumCircuit(1)\n"
+            "qc.unitary([[0, 1], [1, 0]], [0])\n"
+        ),
+    },
 ]
 
 

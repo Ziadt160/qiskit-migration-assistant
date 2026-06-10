@@ -20,6 +20,7 @@ from src.eval.metrics import evaluate_detection, evaluate_reference_cleanliness
 from src.migration.deprecations import (
     DeprecationStore,
     build_deprecation_store,
+    load_harvested_records,
     load_seed_records,
 )
 
@@ -34,6 +35,7 @@ def _ensure_store(db_path: str, docs_dir: str, seed_only: bool) -> DeprecationSt
         if seed_only or not Path(docs_dir).is_dir():
             store.create()
             store.upsert_many(load_seed_records())
+            store.upsert_many(load_harvested_records())  # auto-grown sandbox-verified tier
         else:
             build_deprecation_store(docs_dir, db_path)
     return store
@@ -60,6 +62,12 @@ def main(argv: list[str] | None = None) -> int:
         "--e2e",
         action="store_true",
         help="End-to-end eval: run the full transformer per case (uses Gemini quota).",
+    )
+    parser.add_argument(
+        "--adversarial",
+        action="store_true",
+        help="Held-out coverage probe: report detection gap on APIs NOT in the seed "
+        "(diagnostic only — never affects the gate).",
     )
     args = parser.parse_args(argv)
 
@@ -128,8 +136,50 @@ def main(argv: list[str] | None = None) -> int:
                 f"exec={case['executable']} repairs={case['repairs']}"
             )
 
+    if args.adversarial:
+        _report_adversarial(store)
+
     print("\nGATE:", "PASS" if gate_pass else "FAIL")
     return 0 if gate_pass else 1
+
+
+def _report_adversarial(store: DeprecationStore) -> None:
+    """Held-out coverage probe: how much of the *real* migration surface does the
+    current knowledge base actually detect?
+
+    Diagnostic only — the adversarial set is curated from APIs deliberately absent
+    from the seed, so misses are expected. We never gate on it; the missed symbols
+    are the worklist for growing the seed (HANDOFF §12.1).
+    """
+    from src.eval.dataset.adversarial import load_adversarial
+
+    cases = load_adversarial()
+    result = evaluate_detection(cases, store)
+    by_id = {c["id"]: c for c in cases}
+
+    found = result.total_found
+    expected = result.total_expected
+    print(
+        f"\n[ADVERSARIAL] Held-out detection coverage: {found}/{expected} "
+        f"(gap: {expected - found} undetected) - recall {result.recall:.3f}, DIAGNOSTIC ONLY."
+    )
+
+    # Per-category breakdown so the gap is actionable, not just a number.
+    buckets: dict[str, list[int]] = {}
+    for case in result.per_case:
+        category = by_id[case["id"]].get("category", "uncategorized")
+        tallies = buckets.setdefault(category, [0, 0])
+        tallies[0] += len(case["found"])
+        tallies[1] += len(case["expected"])
+    for category in sorted(buckets):
+        hit, total = buckets[category]
+        print(f"  {category:<22} {hit}/{total} detected")
+
+    missed = [api for case in result.per_case for api in case["missed"]]
+    if missed:
+        print("  Seed-growth candidates (undetected APIs):")
+        for api in missed:
+            print(f"    - {api}")
 
 
 if __name__ == "__main__":
