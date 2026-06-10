@@ -10,6 +10,12 @@
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+![Qiskit Migration Assistant migrating execute + Aer code to Qiskit 2.x — migrated code, per-change rationale, and a sandbox verdict](docs/screenshots/01-execute-aer.png)
+
+> _Old code in, runnable Qiskit 2.x out — every change cited, validation **PASS**, and
+> "executed cleanly on Qiskit 2.2." More scenarios in [`docs/screenshots/`](docs/screenshots);
+> regenerate them with [`scripts/capture_screenshots.py`](scripts/capture_screenshots.py)._
+
 A production-grade **RAG (retrieval-augmented generation) system** that upgrades Qiskit
 code across breaking releases. Most "fix my code" tools hallucinate plausible-but-wrong
 APIs. This one is grounded in the real deprecation/release-note record, statically checked
