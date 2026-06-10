@@ -20,6 +20,7 @@ from src.eval.metrics import evaluate_detection, evaluate_reference_cleanliness
 from src.migration.deprecations import (
     DeprecationStore,
     build_deprecation_store,
+    load_harvested_records,
     load_seed_records,
 )
 
@@ -34,6 +35,7 @@ def _ensure_store(db_path: str, docs_dir: str, seed_only: bool) -> DeprecationSt
         if seed_only or not Path(docs_dir).is_dir():
             store.create()
             store.upsert_many(load_seed_records())
+            store.upsert_many(load_harvested_records())  # auto-grown sandbox-verified tier
         else:
             build_deprecation_store(docs_dir, db_path)
     return store

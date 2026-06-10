@@ -140,3 +140,22 @@ def test_sandbox_verified_outranks_parser_but_not_seed():
     verified = DeprecationRecord("x", "removed", source="sandbox-verified")
     parsed = DeprecationRecord("x", "removed", source="release-note")
     assert _score(seed) > _score(verified) > _score(parsed)
+
+
+def test_sandbox_verified_matches_full_symbol_only(tmp_path):
+    # Auto-harvested records must NOT match by last segment (their names aren't vetted), so a
+    # removed `qiskit.pulse.cx` can't false-flag the live `QuantumCircuit.cx`. Curated records
+    # keep last-segment matching.
+    from src.migration.deprecations import DeprecationRecord, DeprecationStore
+
+    store = DeprecationStore(str(tmp_path / "d.db"))
+    store.create()
+    store.upsert_many(
+        [
+            DeprecationRecord("qiskit.pulse.cx", "removed", source="sandbox-verified"),
+            DeprecationRecord("QuantumCircuit.cnot", "removed", source="curated-seed"),
+        ]
+    )
+    assert {r.symbol for r in store.lookup({"qiskit.pulse.cx"})} == {"qiskit.pulse.cx"}
+    assert store.lookup({"cx"}) == []  # bare last-segment must not hit the auto record
+    assert {r.symbol for r in store.lookup({"cnot"})} == {"QuantumCircuit.cnot"}  # seed still does
