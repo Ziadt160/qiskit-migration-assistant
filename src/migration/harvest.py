@@ -334,6 +334,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cache-dir", default="build/harvest_cache")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--promote", action="store_true", help="Write verified records to --db.")
+    parser.add_argument(
+        "--out", default=None, help="Write verified records to this JSON file (seed schema)."
+    )
     args = parser.parse_args(argv)
 
     sandbox = get_sandbox(args.sandbox_backend)
@@ -348,14 +351,22 @@ def main(argv: list[str] | None = None) -> int:
     report = harvest(
         args.old, args.new, sandbox, store=store, cache_dir=args.cache_dir, limit=args.limit
     )
-    print(f"Mined {report.mined} candidates → {report.verified} sandbox-verified.")
+    print(f"Mined {report.mined} candidates -> {report.verified} sandbox-verified.")
     for rec in report.records:
         repl = f" -> {rec.replacement}" if rec.replacement else ""
         print(f"  + {rec.symbol}{repl}")
     if args.promote:
         print(f"Promoted {report.promoted} records to {args.db} (source={_SOURCE_VERIFIED}).")
-    else:
-        print("Dry run (pass --promote to write to the store).")
+    if args.out:
+        import json
+        from dataclasses import asdict
+
+        Path(args.out).write_text(
+            json.dumps([asdict(r) for r in report.records], indent=2) + "\n", encoding="utf-8"
+        )
+        print(f"Wrote {report.verified} verified records to {args.out}.")
+    if not args.promote and not args.out:
+        print("Dry run (pass --promote and/or --out to persist).")
     return 0
 
 
