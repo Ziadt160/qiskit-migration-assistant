@@ -4,8 +4,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_aer.Aer",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_aer.Aer).",
     "source": "sandbox-verified"
   },
   {
@@ -22,8 +22,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms).",
     "source": "sandbox-verified"
   },
   {
@@ -31,8 +31,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AlgorithmError",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AlgorithmError).",
     "source": "sandbox-verified"
   },
   {
@@ -40,8 +40,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AlgorithmJob",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AlgorithmJob).",
     "source": "sandbox-verified"
   },
   {
@@ -49,8 +49,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AlgorithmResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AlgorithmResult).",
     "source": "sandbox-verified"
   },
   {
@@ -58,8 +58,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplificationProblem",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplificationProblem).",
     "source": "sandbox-verified"
   },
   {
@@ -67,8 +67,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplitudeAmplifier",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplitudeAmplifier).",
     "source": "sandbox-verified"
   },
   {
@@ -76,8 +76,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplitudeEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplitudeEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -85,8 +85,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplitudeEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplitudeEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -94,8 +94,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplitudeEstimator",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplitudeEstimator).",
     "source": "sandbox-verified"
   },
   {
@@ -103,8 +103,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.AmplitudeEstimatorResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.AmplitudeEstimatorResult).",
     "source": "sandbox-verified"
   },
   {
@@ -112,8 +112,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.Eigensolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.Eigensolver).",
     "source": "sandbox-verified"
   },
   {
@@ -121,8 +121,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.EigensolverResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.EigensolverResult).",
     "source": "sandbox-verified"
   },
   {
@@ -130,8 +130,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.EstimationProblem",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.EstimationProblem).",
     "source": "sandbox-verified"
   },
   {
@@ -157,8 +157,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.FasterAmplitudeEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.FasterAmplitudeEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -166,8 +166,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.FasterAmplitudeEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.FasterAmplitudeEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -175,8 +175,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.Grover",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.Grover).",
     "source": "sandbox-verified"
   },
   {
@@ -184,8 +184,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.GroverResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.GroverResult).",
     "source": "sandbox-verified"
   },
   {
@@ -193,8 +193,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.HamiltonianPhaseEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.HamiltonianPhaseEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -202,8 +202,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.HamiltonianPhaseEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.HamiltonianPhaseEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -220,8 +220,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.ImaginaryTimeEvolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.ImaginaryTimeEvolver).",
     "source": "sandbox-verified"
   },
   {
@@ -229,8 +229,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.IterativeAmplitudeEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.IterativeAmplitudeEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -238,8 +238,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.IterativeAmplitudeEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.IterativeAmplitudeEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -247,8 +247,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.IterativePhaseEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.IterativePhaseEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -256,8 +256,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.MaximumLikelihoodAmplitudeEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.MaximumLikelihoodAmplitudeEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -265,8 +265,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.MaximumLikelihoodAmplitudeEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.MaximumLikelihoodAmplitudeEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -274,8 +274,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.MinimumEigensolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.MinimumEigensolver).",
     "source": "sandbox-verified"
   },
   {
@@ -283,8 +283,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.MinimumEigensolverResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.MinimumEigensolverResult).",
     "source": "sandbox-verified"
   },
   {
@@ -292,8 +292,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.NumPyEigensolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.NumPyEigensolver).",
     "source": "sandbox-verified"
   },
   {
@@ -301,8 +301,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.NumPyMinimumEigensolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.NumPyMinimumEigensolver).",
     "source": "sandbox-verified"
   },
   {
@@ -310,8 +310,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.PVQD",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.PVQD).",
     "source": "sandbox-verified"
   },
   {
@@ -319,8 +319,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.PVQDResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.PVQDResult).",
     "source": "sandbox-verified"
   },
   {
@@ -328,8 +328,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.PhaseEstimation",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.PhaseEstimation).",
     "source": "sandbox-verified"
   },
   {
@@ -337,8 +337,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.PhaseEstimationResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.PhaseEstimationResult).",
     "source": "sandbox-verified"
   },
   {
@@ -346,8 +346,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.PhaseEstimationScale",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.PhaseEstimationScale).",
     "source": "sandbox-verified"
   },
   {
@@ -355,8 +355,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.QAOA",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.QAOA).",
     "source": "sandbox-verified"
   },
   {
@@ -373,8 +373,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.RealTimeEvolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.RealTimeEvolver).",
     "source": "sandbox-verified"
   },
   {
@@ -382,8 +382,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.SciPyImaginaryEvolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.SciPyImaginaryEvolver).",
     "source": "sandbox-verified"
   },
   {
@@ -391,8 +391,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.SciPyRealEvolver",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.SciPyRealEvolver).",
     "source": "sandbox-verified"
   },
   {
@@ -400,8 +400,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.TimeEvolutionProblem",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.TimeEvolutionProblem).",
     "source": "sandbox-verified"
   },
   {
@@ -409,8 +409,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.TimeEvolutionResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.TimeEvolutionResult).",
     "source": "sandbox-verified"
   },
   {
@@ -418,8 +418,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.TrotterQRTE",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.TrotterQRTE).",
     "source": "sandbox-verified"
   },
   {
@@ -427,8 +427,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VQD",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VQD).",
     "source": "sandbox-verified"
   },
   {
@@ -436,8 +436,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VQDResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VQDResult).",
     "source": "sandbox-verified"
   },
   {
@@ -445,8 +445,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VQE",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VQE).",
     "source": "sandbox-verified"
   },
   {
@@ -454,8 +454,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VQEResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VQEResult).",
     "source": "sandbox-verified"
   },
   {
@@ -463,8 +463,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VarQITE",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VarQITE).",
     "source": "sandbox-verified"
   },
   {
@@ -472,8 +472,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VarQRTE",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VarQRTE).",
     "source": "sandbox-verified"
   },
   {
@@ -481,8 +481,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VarQTE",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VarQTE).",
     "source": "sandbox-verified"
   },
   {
@@ -490,8 +490,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VarQTEResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VarQTEResult).",
     "source": "sandbox-verified"
   },
   {
@@ -499,8 +499,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VariationalAlgorithm",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VariationalAlgorithm).",
     "source": "sandbox-verified"
   },
   {
@@ -508,8 +508,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.VariationalResult",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.VariationalResult).",
     "source": "sandbox-verified"
   },
   {
@@ -517,8 +517,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.algorithm_job",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.algorithm_job).",
     "source": "sandbox-verified"
   },
   {
@@ -526,8 +526,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.algorithm_result",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.algorithm_result).",
     "source": "sandbox-verified"
   },
   {
@@ -535,8 +535,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.amplitude_amplifiers",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.amplitude_amplifiers).",
     "source": "sandbox-verified"
   },
   {
@@ -544,8 +544,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.amplitude_estimators",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.amplitude_estimators).",
     "source": "sandbox-verified"
   },
   {
@@ -571,8 +571,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.eigensolvers",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.eigensolvers).",
     "source": "sandbox-verified"
   },
   {
@@ -580,8 +580,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.estimate_observables",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.estimate_observables).",
     "source": "sandbox-verified"
   },
   {
@@ -607,8 +607,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.exceptions",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.exceptions).",
     "source": "sandbox-verified"
   },
   {
@@ -616,8 +616,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.gradients",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.gradients).",
     "source": "sandbox-verified"
   },
   {
@@ -625,8 +625,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.list_or_dict",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.list_or_dict).",
     "source": "sandbox-verified"
   },
   {
@@ -643,8 +643,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.minimum_eigensolvers",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.minimum_eigensolvers).",
     "source": "sandbox-verified"
   },
   {
@@ -652,8 +652,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.observables_evaluator",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.observables_evaluator).",
     "source": "sandbox-verified"
   },
   {
@@ -661,8 +661,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.optimizers",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.optimizers).",
     "source": "sandbox-verified"
   },
   {
@@ -670,8 +670,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.phase_estimators",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.phase_estimators).",
     "source": "sandbox-verified"
   },
   {
@@ -679,8 +679,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.state_fidelities",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.state_fidelities).",
     "source": "sandbox-verified"
   },
   {
@@ -688,8 +688,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.time_evolvers",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.time_evolvers).",
     "source": "sandbox-verified"
   },
   {
@@ -697,8 +697,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.utils",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.utils).",
     "source": "sandbox-verified"
   },
   {
@@ -706,8 +706,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit_algorithms.variational_algorithm",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit_algorithms.variational_algorithm).",
     "source": "sandbox-verified"
   },
   {
@@ -1741,8 +1741,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library).",
     "source": "sandbox-verified"
   },
   {
@@ -1984,8 +1984,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.HamiltonianGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.HamiltonianGate).",
     "source": "sandbox-verified"
   },
   {
@@ -2002,8 +2002,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.Initialize",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.Initialize).",
     "source": "sandbox-verified"
   },
   {
@@ -2272,8 +2272,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCPauliRotGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCPauliRotGate).",
     "source": "sandbox-verified"
   },
   {
@@ -2281,8 +2281,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRXGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRXGate).",
     "source": "sandbox-verified"
   },
   {
@@ -2290,8 +2290,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRYGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRYGate).",
     "source": "sandbox-verified"
   },
   {
@@ -2299,8 +2299,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UCRZGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UCRZGate).",
     "source": "sandbox-verified"
   },
   {
@@ -2317,8 +2317,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.circuit.library.UnitaryGate",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.circuit.library.UnitaryGate).",
     "source": "sandbox-verified"
   },
   {
@@ -5440,8 +5440,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.providers.fake_provider.GenericBackendV2",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.providers.fake_provider.GenericBackendV2).",
     "source": "sandbox-verified"
   },
   {
@@ -5449,8 +5449,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.providers.fake_provider.GenericBackendV2",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.providers.fake_provider.GenericBackendV2).",
     "source": "sandbox-verified"
   },
   {
@@ -5458,8 +5458,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.providers.fake_provider.GenericBackendV2",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.providers.fake_provider.GenericBackendV2).",
     "source": "sandbox-verified"
   },
   {
@@ -7339,8 +7339,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.synthesis.one_qubit.OneQubitEulerDecomposer",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.synthesis.one_qubit.OneQubitEulerDecomposer).",
     "source": "sandbox-verified"
   },
   {
@@ -7348,8 +7348,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.quantum_info.Quaternion",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.quantum_info.Quaternion).",
     "source": "sandbox-verified"
   },
   {
@@ -8149,8 +8149,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.utils",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.utils).",
     "source": "sandbox-verified"
   },
   {
@@ -8185,8 +8185,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.utils.parallel",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.utils.parallel).",
     "source": "sandbox-verified"
   },
   {
@@ -8194,8 +8194,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.visualization",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.visualization).",
     "source": "sandbox-verified"
   },
   {
@@ -9355,8 +9355,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.synthesis.unitary.aqc",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.synthesis.unitary.aqc).",
     "source": "sandbox-verified"
   },
   {
@@ -9373,8 +9373,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.synthesis.synth_cnot_phase_aam",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.synthesis.synth_cnot_phase_aam).",
     "source": "sandbox-verified"
   },
   {
@@ -10300,8 +10300,8 @@
     "status": "removed",
     "since_version": null,
     "removed_in": "2.0.2",
-    "replacement": null,
-    "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
+    "replacement": "qiskit.visualization.circuit.qcstyle",
+    "note": "Auto-harvested; sandbox-verified removed (use qiskit.visualization.circuit.qcstyle).",
     "source": "sandbox-verified"
   },
   {
