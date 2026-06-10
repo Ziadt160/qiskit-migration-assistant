@@ -26,16 +26,17 @@ Run it::
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import re
 import sys
 import zipfile
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from src.migration.deprecations import DeprecationRecord, DeprecationStore
 from src.migration.sandbox import Sandbox, get_sandbox
-from src.migration.verify_record import RecordVerdict, verify_candidates
+from src.migration.verify_record import RecordVerdict, verify_candidate
 
 logger = logging.getLogger(__name__)
 
@@ -268,42 +269,53 @@ def harvest_candidates(
     *,
     store: DeprecationStore | None = None,
     source: str = _SOURCE_VERIFIED,
+    skip_symbols: set[str] | None = None,
+    on_verified=None,
+    on_progress=None,
 ) -> HarvestReport:
-    """Stage 3+4: execution-verify candidates and promote the survivors.
+    """Stage 3+4: execution-verify candidates one-by-one and promote the survivors.
 
-    Each candidate is ``{symbol, replacement, status, removed_in}``. A candidate is promoted
-    when the sandbox confirms the old symbol is genuinely absent on the target
-    (``old_absent``); the replacement is attached only if it *also* verified, else dropped.
-    When ``store`` is given the records are upserted with ``source`` (a tier below the curated
-    seed). Pure w.r.t. Griffe — inject any sandbox.
+    **Streaming + resumable** so a killed run never loses everything: each verified removal is
+    upserted to ``store`` and handed to ``on_verified(record)`` the instant it's confirmed,
+    and ``skip_symbols`` (e.g. symbols already in a partial output file) are passed over so a
+    re-run continues where the last left off. ``on_progress(i, total, verified)`` fires each
+    step (wire it to a log line).
+
+    A candidate is promoted when the sandbox confirms the old symbol is genuinely absent
+    (``old_absent``); the replacement is attached only if it *also* verified, else dropped —
+    a garbage replacement hypothesis never discards a valid removal. Pure w.r.t. Griffe.
     """
-    verdicts = verify_candidates(candidates, sandbox)
+    skip = skip_symbols or set()
     records: list[DeprecationRecord] = []
-    for cand, verdict in zip(candidates, verdicts, strict=True):
-        # Gate on the *removal* being verified, not the replacement: a removed symbol with a
-        # bad/garbage replacement hypothesis is still a valid detection record — we just drop
-        # the unverified replacement rather than discarding the whole record.
-        if not verdict.old_absent:
-            continue
-        repl = verdict.replacement if verdict.replacement_ok else None
-        records.append(
-            DeprecationRecord(
-                symbol=cand["symbol"],
-                status=cand.get("status", "removed"),
-                removed_in=cand.get("removed_in"),
-                replacement=repl,
-                note=(
-                    f"Auto-harvested via Griffe API-diff; sandbox-verified removed"
-                    f"{f' (use {repl})' if repl else ''}."
-                ),
-                source=source,
-            )
-        )
+    verdicts: list[RecordVerdict] = []
     promoted = 0
-    if store is not None and records:
-        promoted = store.upsert_many(records)
+    total = len(candidates)
+    for i, cand in enumerate(candidates, 1):
+        if cand["symbol"] not in skip:
+            verdict = verify_candidate(cand["symbol"], cand.get("replacement"), sandbox)
+            verdicts.append(verdict)
+            if verdict.old_absent:
+                repl = verdict.replacement if verdict.replacement_ok else None
+                rec = DeprecationRecord(
+                    symbol=cand["symbol"],
+                    status=cand.get("status", "removed"),
+                    removed_in=cand.get("removed_in"),
+                    replacement=repl,
+                    note=(
+                        f"Auto-harvested via Griffe API-diff; sandbox-verified removed"
+                        f"{f' (use {repl})' if repl else ''}."
+                    ),
+                    source=source,
+                )
+                records.append(rec)
+                if store is not None:
+                    promoted += store.upsert_many([rec])
+                if on_verified is not None:
+                    on_verified(rec)
+        if on_progress is not None:
+            on_progress(i, total, len(records))
     return HarvestReport(
-        mined=len(candidates),
+        mined=total,
         verified=len(records),
         promoted=promoted,
         records=records,
@@ -348,24 +360,49 @@ def main(argv: list[str] | None = None) -> int:
     if store is not None:
         store.create()
 
-    report = harvest(
-        args.old, args.new, sandbox, store=store, cache_dir=args.cache_dir, limit=args.limit
-    )
-    print(f"Mined {report.mined} candidates -> {report.verified} sandbox-verified.")
-    for rec in report.records:
-        repl = f" -> {rec.replacement}" if rec.replacement else ""
-        print(f"  + {rec.symbol}{repl}")
-    if args.promote:
-        print(f"Promoted {report.promoted} records to {args.db} (source={_SOURCE_VERIFIED}).")
-    if args.out:
-        import json
-        from dataclasses import asdict
+    candidates = mine_candidates(args.old, args.new, cache_dir=args.cache_dir, limit=args.limit)
 
-        Path(args.out).write_text(
-            json.dumps([asdict(r) for r in report.records], indent=2) + "\n", encoding="utf-8"
-        )
-        print(f"Wrote {report.verified} verified records to {args.out}.")
-    if not args.promote and not args.out:
+    # Resume: load any partial --out file and skip symbols already verified, so a re-run
+    # continues a killed run instead of starting over.
+    out_path = Path(args.out) if args.out else None
+    saved: list[dict] = []
+    if out_path and out_path.exists():
+        try:
+            saved = json.loads(out_path.read_text(encoding="utf-8"))
+        except Exception:
+            saved = []
+    skip = {r["symbol"] for r in saved}
+    print(
+        f"Mined {len(candidates)} candidates; {len(skip)} already done, "
+        f"{len(candidates) - len(skip)} to verify.",
+        flush=True,
+    )
+
+    def on_verified(rec: DeprecationRecord) -> None:
+        # Persist after every confirmed record so a kill leaves a durable partial result.
+        saved.append(asdict(rec))
+        if out_path:
+            out_path.write_text(json.dumps(saved, indent=2) + "\n", encoding="utf-8")
+
+    def on_progress(i: int, total: int, verified: int) -> None:
+        if i % 25 == 0 or i == total:
+            print(f"  [{i}/{total}] verified-removed total: {len(saved)}", flush=True)
+
+    report = harvest_candidates(
+        candidates,
+        sandbox,
+        store=store,
+        skip_symbols=skip,
+        on_verified=on_verified,
+        on_progress=on_progress,
+    )
+    print(
+        f"Done. New this run: {report.verified} verified-removed; total persisted: {len(saved)}.",
+        flush=True,
+    )
+    if args.promote:
+        print(f"Promoted {report.promoted} new records to {args.db} (source={_SOURCE_VERIFIED}).")
+    if not args.promote and not out_path:
         print("Dry run (pass --promote and/or --out to persist).")
     return 0
 
