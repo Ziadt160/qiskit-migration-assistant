@@ -188,6 +188,15 @@ def _run_path(
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Migrated code (and Qiskit itself) routinely contains non-ASCII — e.g. a Parameter
+    # named "θ". On a Windows cp1252 console, print() would raise UnicodeEncodeError; force
+    # UTF-8 so the result is always printable. No-op where stdout is already UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+        except (AttributeError, ValueError):
+            pass
+
     parser = argparse.ArgumentParser(description="Qiskit version migration assistant.")
     src = parser.add_mutually_exclusive_group()
     src.add_argument("--file", help="Path to a single Python file to migrate.")
