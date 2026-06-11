@@ -135,6 +135,39 @@ def test_self_repair_recovers_after_sandbox_failure(store):
     assert "ImportError" in (gen.feedbacks[1] or "")
 
 
+def test_no_deprecations_short_circuits_without_llm(store):
+    # Clean, already-modern code: the table flags nothing, so the pipeline must NOT invoke
+    # the LLM (which can "tidy" correct code into broken code) — it returns the input verbatim.
+    gen = _FakeGenerator("THIS WOULD REPLACE THE CODE IF THE LLM RAN")
+    retriever = _FakeRetriever()
+    transformer = MigrationTransformer(store, retriever, gen, target_version="2.2")
+
+    clean = "from qiskit import QuantumCircuit\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\n"
+    result = transformer.transform(clean)
+
+    assert gen.seen is None  # LLM never called
+    assert retriever.called is False  # retrieval skipped
+    assert result.ported_code == clean  # input returned unchanged
+    assert result.changes == []
+    assert result.deprecations_found == []
+    assert result.repair_attempts == 0
+    assert result.validation is not None and result.validation.passed
+    assert any("No deprecated APIs detected" in w for w in result.warnings)
+
+
+def test_passthrough_runs_sandbox_when_configured(store):
+    # When nothing is deprecated, the input is still executed (honest "does it run?" signal).
+    sandbox = _FakeSandbox([SandboxReport(backend="fake", ok=True, returncode=0)])
+    transformer = MigrationTransformer(
+        store, _FakeRetriever(), _FakeGenerator("unused"), target_version="2.2", sandbox=sandbox
+    )
+
+    result = transformer.transform("import math\nx = math.pi\n")
+
+    assert result.execution is not None and result.execution.ok
+    assert sandbox.i == 1  # the (unchanged) input was run exactly once
+
+
 def test_self_repair_gives_up_after_max_repairs(store):
     gen = _SeqGenerator([LLMTransformOutput(ported_code=_BAD)])  # never fixes
     sandbox = _FakeSandbox([SandboxReport(backend="fake", ok=False, error_type="ImportError")])

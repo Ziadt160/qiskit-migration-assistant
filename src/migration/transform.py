@@ -104,6 +104,15 @@ class MigrationTransformer:
         warnings = validate_input(code)
         symbols = extract_symbols(code)
         deps = self.store.lookup(symbols.lookup_keys)
+
+        # No-op safety: the architecture grounds "what changed" on the authoritative table,
+        # so when it flags nothing there is nothing to migrate. Return the input verbatim
+        # instead of letting the LLM rewrite — and possibly break — already-clean code, and
+        # skip the retrieval + generation round-trip entirely. (A small model will happily
+        # "tidy" correct imports into broken ones; the table, not the LLM, decides scope.)
+        if not deps:
+            return self._passthrough(code, source_version, warnings)
+
         chunks = self.retriever.retrieve(symbols, deps)
 
         # Initial generation, then a static + (optional) dynamic self-repair loop.
@@ -137,4 +146,33 @@ class MigrationTransformer:
             execution=execution,
             repair_attempts=attempts,
             coverage=compute_coverage(llm_out.ported_code, deps, report),
+        )
+
+    def _passthrough(
+        self, code: str, source_version: str | None, warnings: list[str]
+    ) -> MigrationResult:
+        """Return the input unchanged (no deprecations to migrate), no LLM call.
+
+        Still runs static validation and, if a sandbox is configured, executes the code —
+        an honest "does it run on the target?" signal that also flags the knowledge-gap case
+        (an undetected old API surfaces here as a non-ok execution while the code is returned
+        as-is, rather than being silently rewritten)."""
+        report = validate_output(code, self.store, self.target_version)
+        execution = self.sandbox.run(code) if self.sandbox else None
+        note = (
+            "No deprecated APIs detected against the target knowledge base; "
+            "input returned unchanged."
+        )
+        return MigrationResult(
+            target_version=self.target_version,
+            source_version=source_version,
+            ported_code=code,
+            changes=[],
+            warnings=warnings + [note],
+            deprecations_found=[],
+            retrieval_sources=[],
+            validation=report,
+            execution=execution,
+            repair_attempts=0,
+            coverage=compute_coverage(code, [], report),
         )
