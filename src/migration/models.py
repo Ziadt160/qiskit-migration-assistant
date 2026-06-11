@@ -64,6 +64,30 @@ class SandboxReport(BaseModel):
     stderr: str = ""
 
 
+class CircuitComparison(BaseModel):
+    """Per-circuit behavioral-equivalence outcome (matched by variable name across runs)."""
+
+    name: str
+    status: (
+        str  # equivalent | not-equivalent | missing-in-old | missing-in-new | skipped:* | error:*
+    )
+    fidelity: float | None = None  # |<psi_old|psi_new>|; ~1.0 == equivalent up to global phase
+    n_qubits: int | None = None
+
+
+class EquivalenceReport(BaseModel):
+    """Did the migration preserve *behavior* (old-on-old vs new-on-new)?"""
+
+    backend: str
+    old_ran: bool
+    new_ran: bool
+    comparisons: list[CircuitComparison] = Field(default_factory=list)
+    # True/False over the comparable circuits; None when undetermined (a side failed to
+    # run, or nothing lined up as a comparable pure state).
+    equivalent: bool | None = None
+    note: str = ""
+
+
 class CoverageSummary(BaseModel):
     """How much of the detected deprecation surface the migration actually resolved."""
 
@@ -85,3 +109,4 @@ class MigrationResult(BaseModel):
     execution: SandboxReport | None = None
     repair_attempts: int = 0
     coverage: CoverageSummary | None = None
+    equivalence: EquivalenceReport | None = None

@@ -69,6 +69,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Held-out coverage probe: report detection gap on APIs NOT in the seed "
         "(diagnostic only — never affects the gate).",
     )
+    parser.add_argument(
+        "--equivalence",
+        action="store_true",
+        help="Behavioral-equivalence: run each ORIGINAL on legacy Qiskit + its gold REFERENCE "
+        "on target and compare statevectors (needs both sandbox Docker images; non-gating).",
+    )
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -138,6 +144,24 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.adversarial:
         _report_adversarial(store)
+
+    if args.equivalence:
+        from src.eval.metrics import evaluate_behavioral_equivalence
+        from src.migration.equivalence import default_equivalence_sandboxes
+
+        old_sandbox, new_sandbox = default_equivalence_sandboxes()
+        equiv = evaluate_behavioral_equivalence(cases, old_sandbox, new_sandbox)
+        print(
+            f"\n[EQUIVALENCE] behaviorally-equivalent {equiv.equivalent}/{equiv.n} "
+            f"(determinable pass-rate {equiv.pass_rate:.3f}; "
+            f"{equiv.undetermined} undetermined, {equiv.not_equivalent} divergent)"
+        )
+        for case in equiv.per_case:
+            print(f"  [{case['id']}] {case['verdict']} - {case['note']}")
+            if case["verdict"] == "NOT-equivalent":
+                for comp in case["comparisons"]:
+                    if comp["status"] == "not-equivalent":
+                        print(f"      {comp['name']}: fidelity={comp['fidelity']:.4f}")
 
     print("\nGATE:", "PASS" if gate_pass else "FAIL")
     return 0 if gate_pass else 1

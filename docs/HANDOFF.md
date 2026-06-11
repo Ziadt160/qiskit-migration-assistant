@@ -8,7 +8,7 @@
 
 A production-grade **RAG system that ports Qiskit code from older versions to the latest (2.x)**. You paste old Qiskit code (or point it at a file/folder) and it returns migrated code plus a cited, per-change rationale — grounded in the official deprecation/release-note record and validated by executing the result against `qiskit==2.x`.
 
-**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes (116); lint clean. **The deprecation table now auto-grows:** 30 curated seed records + **1,153 sandbox-verified auto-harvested** records (full-symbol matched, **102 with sandbox-verified replacements**). **Open-sourced** — public on GitHub at **https://github.com/Ziadt160/qiskit-migration-assistant** (branch `main`); MIT licensed; git author `Ziad <ziadt160@gmail.com>`. Push uses Windows Git Credential Manager (no `gh` CLI installed).
+**Status:** Working end-to-end, fully local & free. All milestones (M1–M7) + several extensions done. Unit suite passes (133); lint clean. **Behavioral-equivalence check landed** (`equivalence.py`): proves a migration *preserves the state a circuit prepares* (old-on-old vs new-on-new, statevector fidelity) — real-Docker cross-version proof at fidelity 1.0. **The deprecation table now auto-grows:** 30 curated seed records + **1,153 sandbox-verified auto-harvested** records (full-symbol matched, **102 with sandbox-verified replacements**). **Open-sourced** — public on GitHub at **https://github.com/Ziadt160/qiskit-migration-assistant** (branch `main`); MIT licensed; git author `Ziad <ziadt160@gmail.com>`. Push uses Windows Git Credential Manager (no `gh` CLI installed).
 
 **Key results (golden eval — now 29 cases, covering every curated deprecation except `qiskit.pulse`):**
 | Metric | Score | Tier |
@@ -16,6 +16,7 @@ A production-grade **RAG system that ports Qiskit code from older versions to th
 | Deprecation-detection recall | 1.00 (32/32) | deterministic / offline (`--seed-only`) |
 | Reference cleanliness | 1.00 (29/29) | deterministic / offline (`--seed-only`) |
 | **References executable on Qiskit 2.2.3** | **13/14** | Docker; measured on the pre-graduation 14 — the newly-graduated cases are **not yet Docker-executed** |
+| **Behavioral equivalence (old-on-old vs new-on-new)** | **13/13 determinable @ fidelity 1.0, 0 divergent** | Docker, real cross-version 0.46.3→2.2.3 (`--equivalence`); 16/29 honestly undetermined (no circuit / old code won't run on 0.46.3) |
 | Held-out adversarial coverage | gap-probe (currently 3/3 frontier — harvested tier covers it; refill to keep probing) | deterministic / offline (`--adversarial`, non-gating) |
 | Retrieval recall / context-hit | 1.00 / 1.00 | live, measured on original 8 |
 | E2E validation / changes-applied (local qwen2.5-coder) | 1.00 / 1.00 | live, measured on original 8 |
@@ -32,7 +33,8 @@ old code ──▶ AST symbol extraction (symbols.py)
         ├──▶ hybrid retrieval (retrieval.py): Pinecone vector search + Cohere rerank
         ├──▶ LLM structured transform (generate.py): Ollama | Claude | Gemini → LLMTransformOutput
         ├──▶ static validation (validate_output.py): parses + no leaked deprecated APIs
-        └──▶ sandbox execution + self-repair (sandbox.py): run vs qiskit==target, feed errors back
+        ├──▶ sandbox execution + self-repair (sandbox.py): run vs qiskit==target, feed errors back
+        └──▶ (opt-in) behavioral equivalence (equivalence.py): old-on-old vs new-on-new statevector fidelity
 ```
 
 - **Embeddings:** local `BAAI/bge-large-en-v1.5` on GPU (default), 1024-d — matches the Pinecone index. Cohere is an alternate. Pluggable via `EMBEDDING_PROVIDER`.
@@ -134,6 +136,10 @@ python -m src.eval.run_eval --retrieval                                  # + liv
 LLM_PROVIDER=ollama python -m src.eval.run_eval --e2e                     # + full pipeline
 python -m src.eval.run_eval --executable --sandbox-backend docker        # run gold refs vs qiskit
 LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   # execute generated code
+
+# Behavioral equivalence (old-on-old vs new-on-new) over the golden set — needs BOTH images:
+make sandbox-image sandbox-legacy-image                                   # build qiskit 2.x + 0.46.3 images
+python -m src.eval.run_eval --seed-only --equivalence                     # statevector-fidelity check (non-gating)
 ```
 
 `--path` only runs the LLM on files that actually use a deprecated API (cheap offline pre-filter); it skips junk dirs (`.venv`, `__pycache__`, `build`, `dist`, ...). Dry-run prints diffs; `--apply` writes them.
@@ -183,7 +189,8 @@ LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   #
 | `src/migration/retrieval.py` | Hybrid retrieval (symbol/replacement-targeted + semantic) + rerank |
 | `src/generation/generate.py` | Gemini/Claude/Ollama generators + `get_generator()`; structured `LLMTransformOutput` |
 | `src/migration/validate_input.py` / `validate_output.py` | Input guardrails / static output validation |
-| `src/migration/sandbox.py` | `LocalSubprocessSandbox` + `DockerSandbox` (read-only, no-network, tmpfs) |
+| `src/migration/sandbox.py` | `LocalSubprocessSandbox` + `DockerSandbox` (read-only, no-network, tmpfs); `run(code, warnings_as_errors=, max_capture=)` |
+| `src/migration/equivalence.py` | **Behavioral-equivalence check** (old-on-old vs new-on-new): appends a statevector-fingerprint harness to old+new code, runs each on its Qiskit (legacy/target images), compares prepared states by **fidelity `|⟨ψ_old|ψ_new⟩|`** (global-phase- & float-noise-tolerant). `check_equivalence`, `build_harness`, `compare_fingerprints`, `default_equivalence_sandboxes`. Honest scope: only pure-state-from-\|0⟩ circuits compared; parametric/measured-mid/oversized → `skipped`; a side that won't run → `equivalent=None`. |
 | `src/migration/verify_record.py` | Execution-verification gate: probe a candidate `{symbol→replacement}` in the sandbox (old must be genuinely absent, replacement must import) → `RecordVerdict`; `verify_candidate`/`verify_candidates`. Trust gate for auto-harvested deprecation records (§12.1). |
 | `src/migration/harvest.py` | Autonomous harvester (Stage 1→4): Griffe API-diff → candidate removed symbols → sandbox-verify → promote as `source="sandbox-verified"`. `mine_candidates` (lazy Griffe, `[harvest]` extra), `harvest_candidates`, `harvest`, CLI `python -m src.migration.harvest`. |
 | `src/migration/replacements.py` | Attach replacements to detection-only harvested records from two sources — the `flake8-qiskit-migration` import map (member-wise rename) + the migration-guide markdown rename tables (`load_guide_replacements`, URL-derived symbols) — each sandbox-verified before attaching. `propose_replacement`/`propose_from_guide`/`enrich_records`; CLI `python -m src.migration.replacements --docs-dir ...`. |
@@ -199,7 +206,8 @@ LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   #
 | `src/app/chatbot.py` | Streamlit UI — alternative front end (Ported/Diff tabs, coverage row) |
 | `src/eval/{dataset/golden.py,metrics.py,run_eval.py}` | Golden set + metrics + gate runner |
 | `scripts/run_ingestion.py` / `scripts/manual_search.py` | Manual ingestion / retrieval smoke (live) |
-| `Dockerfile.{api,worker,ui,sandbox}` / `docker-compose.yml` / `Makefile` | Containers + compose + make targets |
+| `Dockerfile.{api,worker,ui,sandbox}` / `docker-compose.yml` / `Makefile` | Containers + compose + make targets (`make sandbox-image`, `sandbox-legacy-image`, `equivalence`) |
+| `Dockerfile.sandbox-legacy` | Old-Qiskit (0.46.3 + aer 0.13.3) image for the behavioral-equivalence check's "old-on-old" run |
 | `.github/workflows/{ci,deploy}.yml` | CI (lint/type/test/eval gate/build) + deploy |
 
 ---
@@ -241,11 +249,18 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 - **Ran the full harvest + auto-loaded it (durably).** Hardened the CLI first (a 1h batch run was killed and lost everything because it wrote only at the end) → **streaming writes + resume + progress logging** (`--out` JSON, crash-safe). Full run: **1,177 candidates → 1,153 sandbox-verified removals** (24 correctly rejected as still-importable), **1,132 new vs the 28-record seed (~40× coverage)**, 21 rediscovered. Persisted to `src/migration/data/harvested_deprecations.json`, loaded alongside the seed by `build_deprecation_store`/`_ensure_store`.
 - **Precision catch + fix (the gate earned its keep).** Auto-trusting all 1,153 with last-segment matching **broke cleanliness 1.0 → 0.667**: harvested removals collide by *name* with current APIs (`qiskit.pulse.cx` vs live `QuantumCircuit.cx`, `qiskit.algorithms.VQE` vs `qiskit_algorithms.VQE`, …). Fix: the **`sandbox-verified` tier matches by FULL SYMBOL only**, never last-segment (`DeprecationStore.lookup`) — names aren't hand-vetted like the seed. **Validated: gate stays PASS (detection 30/30, cleanliness 1.000), adversarial diagnostic 0/5 → 3/5** (import-form removals auto-detected; the 2 method-form ones, `diagonal`/`squ`, correctly stay seed-growth candidates). **109 unit tests pass.** Replacements: **0/1,153** — extraction remains the one unsolved piece.
 
+**Done this session (2026-06-11) — behavioral-equivalence check (roadmap #4, the differentiator):**
+- **Built the standout correctness signal** (`src/migration/equivalence.py` + `src/tests/test_equivalence.py`, 17 hermetic tests). It answers the question the sandbox can't: not "does the ported code *run*?" but "does it still *do the same thing*?" Strategy = **old-on-old vs new-on-new**: a fingerprint harness (appended to the user code, using only APIs present in both 0.46 and 2.x) inspects the module namespace for every `QuantumCircuit`, strips final measurements, and emits the **statevector it prepares from \|0…0⟩** as JSON; the host matches circuits by variable name and compares each pair by **fidelity `|⟨ψ_old|ψ_new⟩|`**. Fidelity is the right metric — invariant to global phase (physically meaningless) and, unlike a hash, tolerant to the sub-ULP float noise two Qiskit versions produce, so equivalent states score 1.0 and a real divergence drops below threshold.
+- **Honest scope, by design** (matches the verification-first ethos): only circuits reducing to a pure state from \|0⟩ are compared; **parametric / mid-circuit-measured / >`max_qubits`** circuits are reported `skipped:<reason>`; if either side fails to run or nothing lines up by name, the verdict is `equivalent=None` (undetermined) — **never a false "equivalent."**
+- **New legacy image** (`Dockerfile.sandbox-legacy`, Qiskit **0.46.3** + aer 0.13.3 on py3.11) so the *original* deprecated code actually runs for its "old" side. `DockerSandbox.run` gained two backward-compatible kwargs — `warnings_as_errors=False` (old code legitimately warns) and `max_capture` (a 12-qubit statevector blows past the 4 KB cap). Wired opt-in into the transformer (`EQUIVALENCE_ENABLED`, injected + best-effort so infra failure never sinks a migration) and into the eval (`run_eval --equivalence`, `evaluate_behavioral_equivalence`, non-gating; `make equivalence`).
+- **Proven on REAL Docker, cross-version (0.46.3 → 2.2.3):** `bind-parameters` → `bound` circuit **fidelity 1.0** (old `bind_parameters` ≡ new `assign_parameters`), parametric `qc` correctly skipped; `execute-aer-basic` → Bell `qc` **fidelity 1.0** (the `execute`→`backend.run(transpile(...))` rewrite preserves the prepared state), measurements auto-stripped. **133 unit tests pass; lint/format clean.**
+- **Full golden-set run (`run_eval --equivalence`, real Docker, 58 container runs):** **13/29 determinable, all 13 behaviorally equivalent at fidelity 1.0, ZERO divergent** (determinable pass-rate 1.000). The 16 "undetermined" are honest, in two buckets the check refuses to score: (a) the migration concerns a **non-circuit object** (opflow operators, optimizers, backends, VQE, QuantumInstance — nothing to fingerprint), or (b) the **original code won't run on the minimal 0.46.3 legacy image** (qiskit-aqua/ignis/ibmq are separate removed packages; `tools.visualization` needs matplotlib; `PauliTable` predates 0.46) → "could not fingerprint original" — never a false pass. The deterministic gate stays PASS alongside (detection 32/32, cleanliness 1.000).
+
 **Top next moves (prioritized — full rationale in §12):**
 1. **Refill the adversarial probe (it's at 0-gap) + extend replacement coverage.** The loop fully cycled: replacement extraction landed (`src/migration/replacements.py`, two sandbox-verified sources — flake8 import map → 88, migration-guide rename tables → 14; **0 → 102 replacements**), and the last 2 method-form frontier misses (`diagonal`/`squ`) were **graduated into the seed + golden** (golden 27→29, detection 32/32). The adversarial diagnostic now reads **3/3 (gap 0)** — the harvested tier covers the remaining frontier — so **refill `adversarial.py` with new held-out cases the harvest *doesn't* reach** to keep the probe measuring a real gap. Further replacement coverage: true vector-RAG over the guides for unstructured prose (same verify gate) — lower ROI, most remaining records have no documented replacement. *(Re-running the harvest is now crash-safe + resumable via `--out`.)*
 2. **Local vector-store option + shippable index** — makes "fully local & free" literally true (today Pinecone is the one piece a fresh cloner can't run).
 3. **Sandbox container cleanup on timeout** — small fix; closes the only real operational hazard (orphaned containers).
-4. **Behavioral-equivalence check** (old-on-old vs new-on-new) — the standout differentiator; sandbox infra already exists.
+4. ~~**Behavioral-equivalence check** (old-on-old vs new-on-new)~~ — **DONE 2026-06-11** (`src/migration/equivalence.py`; statevector-fidelity, real-Docker cross-version proof at fidelity 1.0). Next increments if revisited: surface the verdict in the web UI + the live API response; broaden the fingerprint to **counts/probabilities for mid-circuit-measurement circuits** (currently `skipped`); auto-pick the legacy image from the detected `source_version` (today fixed at 0.46.3).
 
 **Broader backlog (build on demand):** technical post; CONTRIBUTING + UI screenshot/GIF in README; notebook (`.ipynb`) support; source-version auto-detection; generalize to a 2nd library (Pandas 1→2); multi-hop version planning; VS Code extension / pre-commit / GitHub Action; Groq/OpenRouter via an OpenAI-compatible generator.
 
@@ -276,5 +291,5 @@ _Full read-through of the core on 2026-06-10. One-line thesis: **the system arou
 4. **API isn't multi-instance-safe / no auth.** Rate limiter (`api/main.py:44`) is in-process memory keyed on direct client IP → resets on restart, and behind a proxy every request shares the proxy IP (one user exhausts all). `/metrics` unauthenticated; `user_id` in schema but never populated; cache key is code+target only (a better prompt/seed won't invalidate stale cached results — 1-day TTL mostly saves it). Fine for single-VM as documented; fix before real exposure.
 5. **Smaller/real:** repair loop feeds only the *latest* failure (can oscillate A→B→A and burn all repairs); it also sandbox-runs code that already failed static validation (wasted run). UI poll timeout (240s) < server job timeout (900s) → browser says "timed out" while the job still completes. `retrieval/search.py` calls `logging.basicConfig()` at import (library configuring global logging). Last-segment matching relies on hand-maintained `_GENERIC_SEGMENTS`/`_CURRENT_ALLOWLIST` stoplists. CI mypy non-blocking; no coverage; docker-build builds images it never runs.
 
-**Recommended order:** (1) adversarial eval → (2) local vector store + shipped index → (3) sandbox cleanup + cap-drop → (4) behavioral-equivalence check. Items 1–2 unlock the OSS story; 3 is a tiny safety PR; 4 is the differentiator.
+**Recommended order:** (1) adversarial eval ✅ → (2) local vector store + shipped index → (3) sandbox cleanup + cap-drop → (4) ~~behavioral-equivalence check~~ ✅ **DONE 2026-06-11** (`src/migration/equivalence.py`; statevector-fidelity, old-on-old vs new-on-new, real-Docker cross-version proof at fidelity 1.0 — the differentiator). Items 1–2 unlock the OSS story; 3 is a tiny safety PR.
 </content>

@@ -71,6 +71,16 @@ class Settings(BaseSettings):
     sandbox_timeout_s: int = 30
     sandbox_image: str = "qiskit-migration-sandbox:latest"
 
+    # --- Behavioral-equivalence check (old-on-old vs new-on-new; see equivalence.py) ---
+    equivalence_enabled: bool = (
+        False  # run the check inline in the transformer (opt-in; adds 2 runs)
+    )
+    legacy_sandbox_image: str = (
+        "qiskit-migration-sandbox-legacy:latest"  # old Qiskit for the original
+    )
+    equivalence_fidelity_threshold: float = 0.999  # |<psi_old|psi_new>| above this == equivalent
+    equivalence_max_qubits: int = 12  # cap statevector size (2**n amplitudes) per circuit
+
     # --- Hardening ---
     cache_enabled: bool = True
     cache_ttl_s: int = 86_400
