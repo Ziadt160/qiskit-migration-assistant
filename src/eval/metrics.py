@@ -51,6 +51,23 @@ class RetrievalResult:
 
 
 @dataclass
+class EquivalenceEvalResult:
+    """Behavioral-equivalence over the golden set: original-on-old vs reference-on-new."""
+
+    n: int
+    equivalent: int  # cases the check confirmed behaviorally equivalent
+    undetermined: int  # a side failed to run / nothing comparable lined up
+    not_equivalent: int  # a comparable circuit diverged (a real regression signal)
+    per_case: list[dict] = field(default_factory=list)
+
+    @property
+    def pass_rate(self) -> float:
+        """Fraction of *determinable* cases that were equivalent (undetermined excluded)."""
+        determinable = self.equivalent + self.not_equivalent
+        return self.equivalent / determinable if determinable else 1.0
+
+
+@dataclass
 class E2EResult:
     n: int
     validation_pass_rate: float  # ported code passes static validation
@@ -124,6 +141,48 @@ def evaluate_executable_correctness(
             )
     pass_rate = (len(cases) - len(failures)) / len(cases) if cases else 1.0
     return ExecutableResult(pass_rate, failures)
+
+
+def evaluate_behavioral_equivalence(
+    cases: list[dict], old_sandbox, new_sandbox
+) -> EquivalenceEvalResult:
+    """Behavioral-equivalence eval: run each case's ORIGINAL code on the legacy Qiskit and
+    its gold REFERENCE on the target, then compare prepared statevectors (see
+    `src.migration.equivalence`). `old_sandbox`/`new_sandbox` are `Sandbox` instances
+    targeting old/new Qiskit respectively (typically two Docker images).
+    """
+    from src.migration.equivalence import check_equivalence
+
+    equivalent = undetermined = not_equivalent = 0
+    per_case: list[dict] = []
+    for case in cases:
+        report = check_equivalence(
+            case["old_code"], case["reference_ported_code"], old_sandbox, new_sandbox
+        )
+        if report.equivalent is True:
+            equivalent += 1
+            verdict = "equivalent"
+        elif report.equivalent is False:
+            not_equivalent += 1
+            verdict = "NOT-equivalent"
+        else:
+            undetermined += 1
+            verdict = "undetermined"
+        per_case.append(
+            {
+                "id": case["id"],
+                "verdict": verdict,
+                "note": report.note,
+                "comparisons": [c.model_dump() for c in report.comparisons],
+            }
+        )
+    return EquivalenceEvalResult(
+        n=len(cases),
+        equivalent=equivalent,
+        undetermined=undetermined,
+        not_equivalent=not_equivalent,
+        per_case=per_case,
+    )
 
 
 def _context_targets(expected: str, store: DeprecationStore) -> set[str]:

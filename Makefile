@@ -1,4 +1,5 @@
-.PHONY: install dev test lint fmt typecheck eval build-store ingest serve worker up down
+.PHONY: install dev test lint fmt typecheck eval build-store ingest serve worker up down \
+        sandbox-image sandbox-legacy-image equivalence
 
 install:
 	pip install -e .
@@ -40,3 +41,14 @@ up:
 
 down:
 	docker compose down
+
+# Build the two sandbox images used by the behavioral-equivalence check.
+sandbox-image:
+	docker build -f Dockerfile.sandbox -t qiskit-migration-sandbox:latest .
+
+sandbox-legacy-image:
+	docker build -f Dockerfile.sandbox-legacy -t qiskit-migration-sandbox-legacy:latest .
+
+# Behavioral-equivalence eval over the golden set (needs both sandbox images built).
+equivalence: sandbox-image sandbox-legacy-image
+	python -m src.eval.run_eval --equivalence

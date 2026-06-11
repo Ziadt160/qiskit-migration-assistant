@@ -1,0 +1,25 @@
+# Legacy execution environment for the behavioral-equivalence check (equivalence.py).
+# Runs the ORIGINAL (pre-migration) code on an OLD Qiskit so its statevector can be
+# fingerprinted and compared against the migrated code run on Dockerfile.sandbox (2.x).
+#
+# Pinned to 0.46.3 — the last 0.x release — which still exposes the bulk of the
+# deprecated-then-removed surface the migrations target (execute, Aer, opflow,
+# bind_parameters, BasicAer, qiskit.algorithms, ...). Same hardening as the target
+# sandbox: run by DockerSandbox with --network=none, --read-only, resource caps, non-root.
+#
+# python:3.11 — old Qiskit + a matching qiskit-aer have reliable wheels there.
+FROM python:3.11-slim
+
+ARG QISKIT_VERSION=0.46.3
+ARG QISKIT_AER_VERSION=0.13.3
+RUN pip install --no-cache-dir \
+        "qiskit==${QISKIT_VERSION}" \
+        "qiskit-aer==${QISKIT_AER_VERSION}" \
+    && useradd --create-home --uid 10001 sandbox
+
+USER sandbox
+WORKDIR /work
+
+# No ENTRYPOINT: DockerSandbox supplies the full command
+# (python /work/snippet.py — deprecation warnings are NOT promoted to errors here,
+# since old code legitimately warns; equivalence cares about behavior, not cleanliness).

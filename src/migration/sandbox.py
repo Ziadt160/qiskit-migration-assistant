@@ -39,7 +39,9 @@ def _error_type(stderr: str) -> str | None:
 
 
 class Sandbox(Protocol):
-    def run(self, code: str) -> SandboxReport: ...
+    def run(
+        self, code: str, *, warnings_as_errors: bool = True, max_capture: int | None = None
+    ) -> SandboxReport: ...
 
 
 class LocalSubprocessSandbox:
@@ -48,11 +50,15 @@ class LocalSubprocessSandbox:
     def __init__(self, timeout_s: int | None = None):
         self.timeout_s = timeout_s or get_settings().sandbox_timeout_s
 
-    def run(self, code: str) -> SandboxReport:
+    def run(
+        self, code: str, *, warnings_as_errors: bool = True, max_capture: int | None = None
+    ) -> SandboxReport:
+        cap = max_capture or _MAX_CAPTURE
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "snippet.py"
             path.write_text(code, encoding="utf-8")
-            cmd = [sys.executable, "-W", "error::DeprecationWarning", str(path)]
+            warn = ["-W", "error::DeprecationWarning"] if warnings_as_errors else []
+            cmd = [sys.executable, *warn, str(path)]
             try:
                 proc = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout_s)
             except subprocess.TimeoutExpired as e:
@@ -60,15 +66,15 @@ class LocalSubprocessSandbox:
                     backend=self.backend,
                     ok=False,
                     timed_out=True,
-                    stderr=(e.stderr or "")[:_MAX_CAPTURE] if isinstance(e.stderr, str) else "",
+                    stderr=(e.stderr or "")[:cap] if isinstance(e.stderr, str) else "",
                 )
         return SandboxReport(
             backend=self.backend,
             ok=proc.returncode == 0,
             returncode=proc.returncode,
             error_type=None if proc.returncode == 0 else _error_type(proc.stderr),
-            stdout=proc.stdout[:_MAX_CAPTURE],
-            stderr=proc.stderr[:_MAX_CAPTURE],
+            stdout=proc.stdout[:cap],
+            stderr=proc.stderr[:cap],
         )
 
 
@@ -80,10 +86,14 @@ class DockerSandbox:
         self.image = image or settings.sandbox_image
         self.timeout_s = timeout_s or settings.sandbox_timeout_s
 
-    def run(self, code: str) -> SandboxReport:
+    def run(
+        self, code: str, *, warnings_as_errors: bool = True, max_capture: int | None = None
+    ) -> SandboxReport:
+        cap = max_capture or _MAX_CAPTURE
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "snippet.py"
             path.write_text(code, encoding="utf-8")
+            warn = ["-W", "error::DeprecationWarning"] if warnings_as_errors else []
             cmd = [
                 "docker",
                 "run",
@@ -103,8 +113,7 @@ class DockerSandbox:
                 f"{tmp}:/work:ro",
                 self.image,
                 "python",
-                "-W",
-                "error::DeprecationWarning",
+                *warn,
                 "/work/snippet.py",
             ]
             try:
@@ -123,8 +132,8 @@ class DockerSandbox:
             ok=proc.returncode == 0,
             returncode=proc.returncode,
             error_type=None if proc.returncode == 0 else _error_type(proc.stderr),
-            stdout=proc.stdout[:_MAX_CAPTURE],
-            stderr=proc.stderr[:_MAX_CAPTURE],
+            stdout=proc.stdout[:cap],
+            stderr=proc.stderr[:cap],
         )
 
 
