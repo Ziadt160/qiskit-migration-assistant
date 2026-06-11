@@ -20,6 +20,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Protocol
 
@@ -81,6 +82,9 @@ class DockerSandbox:
         self.timeout_s = timeout_s or settings.sandbox_timeout_s
 
     def run(self, code: str) -> SandboxReport:
+        # A unique name so we can force-remove the container if `docker run` is killed on
+        # timeout — `--rm` only cleans up a container that actually exits.
+        name = f"qmsandbox-{uuid.uuid4().hex[:12]}"
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "snippet.py"
             path.write_text(code, encoding="utf-8")
@@ -88,10 +92,14 @@ class DockerSandbox:
                 "docker",
                 "run",
                 "--rm",
+                "--name",
+                name,
                 "--network=none",  # no network for untrusted code
                 "--memory=1g",
                 "--cpus=1",
                 "--pids-limit=256",
+                "--cap-drop=ALL",  # untrusted code gets no Linux capabilities...
+                "--security-opt=no-new-privileges",  # ...and cannot escalate
                 "--read-only",  # immutable rootfs...
                 "--tmpfs",
                 "/tmp:rw,size=256m",  # ...but a writable scratch dir
@@ -112,6 +120,11 @@ class DockerSandbox:
                     cmd, capture_output=True, text=True, timeout=self.timeout_s + 30
                 )
             except subprocess.TimeoutExpired:
+                # The CLI was killed but the container may still be running — force-remove it
+                # so an LLM infinite loop can't orphan a resource-capped container.
+                subprocess.run(
+                    ["docker", "rm", "-f", name], capture_output=True, text=True, check=False
+                )
                 return SandboxReport(backend=self.backend, ok=False, timed_out=True)
             except FileNotFoundError as e:
                 logger.error("Docker not available: %s", e)

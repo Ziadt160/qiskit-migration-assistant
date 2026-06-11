@@ -22,7 +22,6 @@ except ImportError:  # pragma: no cover - dependency guard
 
 from src.ingestion.loader import Document
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 

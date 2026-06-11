@@ -6,7 +6,9 @@
 // API is served from the same origin as this page (FastAPI mounts the UI at /ui).
 const API = "";
 const POLL_INTERVAL_MS = 1500;
-const POLL_TIMEOUT_MS = 240000;
+// Match the server's per-job timeout (config.job_timeout_s = 900s) so the browser never
+// gives up on a job the backend is still running. A bit of slack for the final fetch.
+const POLL_TIMEOUT_MS = 930000;
 
 const EXAMPLES = {
   "execute + Aer  (Qiskit ≤ 0.46)":

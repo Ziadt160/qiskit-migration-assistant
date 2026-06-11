@@ -16,7 +16,6 @@ from src.config import get_settings
 from src.embeddings import get_embedder
 from src.ingestion.loader import Document
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
