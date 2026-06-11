@@ -4,6 +4,42 @@
 
 ---
 
+## 0. Resume here — current state (last worked 2026-06-10)
+
+**Branch:** `claude/keen-bhabha-8a286e` — **14 commits ahead of `main`, all pushed, open as PR #2** (https://github.com/Ziadt160/qiskit-migration-assistant/pull/2, *not* merged). `main` is still the pre-this-session state, so **merge PR #2 before sharing the repo publicly.** Working tree clean; **118 unit tests pass**; lint/format clean; golden gate green (**detection 32/32, cleanliness 1.000**).
+
+**What this session built (the arc):**
+1. **Held-out adversarial eval** (`run_eval --adversarial`, `src/eval/dataset/adversarial.py`) — exposed the golden eval's circularity; measures *real* coverage. Closed the first 0/13 gap.
+2. **Autonomous knowledge harvester** (`src/migration/harvest.py` + `verify_record.py`) — Griffe API-diff `0.46→2.x` → sandbox-verify → promote. Grew the trusted table **28 → 1,181** records (~40×, every one execution-verified). Crash-safe (streaming/resume via `--out`).
+3. **Replacements** (`src/migration/replacements.py`) — `flake8-qiskit-migration` map + migration-guide rename tables → **102 sandbox-verified replacements**.
+4. **Deterministic safety-net** (`transform._apply_known_replacements`) — auto-repairs LLM misses using the table's verified replacements (adopts only if it then validates *and* runs). Fixed a real `ModuleNotFoundError` (`qiskit.algorithms` left unfixed by the 7B model).
+5. **Verified live:** retrieval recall **1.000/1.000** (Pinecone+BGE+Cohere), full E2E correct (Ollama+RAG+Docker). UI screenshots in `docs/screenshots/` + reusable `scripts/capture_screenshots.py`.
+6. **Fixed §12 weaknesses:** sandbox container cleanup + `--cap-drop=ALL`/`no-new-privileges`, removed import-time `logging.basicConfig` (4 modules), UI poll timeout 240s→930s.
+
+**Bring the stack up (for the UI / live testing):**
+```bash
+cd <worktree>
+cp "C:\Evoth Labs\RAGProject\.env" .env   # worktree lacks the gitignored .env (keys live in the main repo)
+# Ollama must be serving (qwen2.5-coder:7b) + Docker up (image qiskit-migration-sandbox:latest)
+LLM_PROVIDER=ollama QUEUE_EAGER=true SANDBOX_BACKEND=docker \
+  python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8011   # -> http://localhost:8011/ui/
+```
+(Eager mode needs no Redis/worker; the `cache ... 6379` warning is harmless. §4 has the PowerShell variant + async mode.)
+
+**Gotchas learned this session:**
+- **Don't swap the LLM to a chatty model** (e.g. `gpt-oss:120b-cloud`): it migrates better but breaks the structured-output parser (`OUTPUT_PARSING_FAILURE`). `qwen2.5-coder:7b` follows the schema; the safety-net covers its misses.
+- **Run the harvest crash-safe** (`harvest.py … --out file.json` streams + resumes) — a naive batch run got killed ~8 min in and lost everything; that's why streaming/resume exists.
+- **The auto-harvested tier matches by FULL symbol only** (precision). Never give it last-segment matching — it collides by name with live APIs (`qiskit.pulse.cx` vs `QuantumCircuit.cx`) and breaks golden cleanliness (1.0→0.667). Curated seed keeps last-segment matching.
+- Port **8000** on this machine is taken by an unrelated app — use **8011**.
+
+**Next moves (prioritized):**
+1. **Merge PR #2** → `main` reflects the work (do before sharing publicly).
+2. **Cycle the adversarial loop:** `adversarial.py` is at 3/3 (gap 0 — the harvest already covers it). Refill with new held-out cases the harvest *doesn't* reach to keep the probe measuring a frontier.
+3. **Grow coverage:** periodic `harvest --promote`; extend replacements with RAG-over-guides for the long tail (same sandbox-verify gate).
+4. **Remaining §12 weaknesses:** `/metrics` auth + populate `user_id` (quick); Redis-backed rate limiter (bigger — own branch); make `mypy` blocking in CI (risky — needs a type-cleanup pass first).
+
+---
+
 ## 1. What this is
 
 A production-grade **RAG system that ports Qiskit code from older versions to the latest (2.x)**. You paste old Qiskit code (or point it at a file/folder) and it returns migrated code plus a cited, per-change rationale — grounded in the official deprecation/release-note record and validated by executing the result against `qiskit==2.x`.
