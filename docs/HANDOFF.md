@@ -117,6 +117,10 @@ python -m src.migration.cli --build-store
 # Offline: just report deprecations in a snippet (NO network, NO LLM)
 python -m src.migration.cli --offline --file old.py
 
+# Runtime-true deprecations: run the code on the legacy 0.46 image, report the warnings it
+# actually triggers + Qiskit's own replacement hints (needs Docker + the legacy image)
+python -m src.migration.cli --runtime-deps --file old.py
+
 # Migrate one snippet (full pipeline)
 python -m src.migration.cli --file old.py
 python -m src.migration.cli --code "from qiskit import execute" --json
@@ -190,6 +194,7 @@ python -m src.eval.run_eval --seed-only --equivalence                     # stat
 | `src/generation/generate.py` | Gemini/Claude/Ollama generators + `get_generator()`; structured `LLMTransformOutput` |
 | `src/migration/validate_input.py` / `validate_output.py` | Input guardrails / static output validation |
 | `src/migration/sandbox.py` | `LocalSubprocessSandbox` + `DockerSandbox` (read-only, no-network, tmpfs); `run(code, warnings_as_errors=, max_capture=)` |
+| `src/migration/runtime_deprecations.py` | **Runtime deprecation capture** — automates Qiskit's "test on 0.46 first" advice: prepends a `showwarning` hook to the user code, runs it on the legacy image, and structures the `DeprecationWarning`s it *actually* triggers (symbol + Qiskit's own "Use X instead" hint + since/removed versions). Incremental emit (survives a timeout), partial-stdout-on-timeout. `capture_runtime_deprecations`, `legacy_sandbox`; CLI `--runtime-deps`. Augments the static table with runtime-true, usage-specific detection. |
 | `src/migration/equivalence.py` | **Behavioral-equivalence check** (old-on-old vs new-on-new): appends a statevector-fingerprint harness to old+new code, runs each on its Qiskit (legacy/target images), compares prepared states by **fidelity `|⟨ψ_old|ψ_new⟩|`** (global-phase- & float-noise-tolerant). `check_equivalence`, `build_harness`, `compare_fingerprints`, `default_equivalence_sandboxes`. Honest scope: only pure-state-from-\|0⟩ circuits compared; parametric/measured-mid/oversized → `skipped`; a side that won't run → `equivalent=None`. |
 | `src/migration/verify_record.py` | Execution-verification gate: probe a candidate `{symbol→replacement}` in the sandbox (old must be genuinely absent, replacement must import) → `RecordVerdict`; `verify_candidate`/`verify_candidates`. Trust gate for auto-harvested deprecation records (§12.1). |
 | `src/migration/harvest.py` | Autonomous harvester (Stage 1→4): Griffe API-diff → candidate removed symbols → sandbox-verify → promote as `source="sandbox-verified"`. `mine_candidates` (lazy Griffe, `[harvest]` extra), `harvest_candidates`, `harvest`, CLI `python -m src.migration.harvest`. |
