@@ -89,6 +89,23 @@ def _run_offline(code: str, store: DeprecationStore) -> int:
     return 0
 
 
+def _run_runtime_deps(code: str) -> int:
+    """Run the code on the legacy Qiskit image and report the deprecations it actually triggers."""
+    from src.migration.runtime_deprecations import capture_runtime_deprecations, legacy_sandbox
+
+    report = capture_runtime_deprecations(code, legacy_sandbox())
+    if not report.ran:
+        print(f"Could not capture runtime deprecations. {report.note}")
+        return 2
+    print(f"{report.note}\n" + "-" * 70)
+    for d in report.deprecations:
+        print(f"  {d.symbol or '(unparsed)'}  [{d.category}, removed {d.removed_in or '?'}]")
+        print(f"      -> {d.replacement or '(no inline hint; full message below)'}")
+        if not d.replacement:
+            print(f"         {d.message[:160]}")
+    return 0
+
+
 def _print_coverage(prefix: str, result) -> None:
     cov = result.coverage
     if not cov:
@@ -205,6 +222,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--docs-dir", default=_DEFAULT_DOCS, help="Docs corpus directory.")
     parser.add_argument("--source-version", help="Hint: the Qiskit version the code targets.")
     parser.add_argument("--json", action="store_true", help="Emit JSON (single-snippet mode).")
+    parser.add_argument(
+        "--runtime-deps",
+        action="store_true",
+        help="Run the code on the legacy Qiskit image and report the DeprecationWarnings it "
+        "actually triggers, with Qiskit's own replacement hints (needs Docker + legacy image).",
+    )
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -224,6 +247,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- single snippet (inline / stdin) ---
     code = _read_code(args)
+
+    if args.runtime_deps:  # needs Docker + the legacy image, but no store / network keys
+        return _run_runtime_deps(code)
+
     store = _ensure_store(args.db, args.docs_dir)
 
     if args.offline:
