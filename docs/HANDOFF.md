@@ -30,7 +30,7 @@ The deterministic tiers (detection, cleanliness) are offline-reproducible by any
 old code ──▶ AST symbol extraction (symbols.py)
         ├──▶ deprecation lookup — authoritative table (deprecations.py, SQLite)
         ├──▶ hybrid retrieval (retrieval.py): Pinecone vector search + Cohere rerank
-        ├──▶ LLM structured transform (generate.py): Ollama | Claude | Gemini → LLMTransformOutput
+        ├──▶ LLM structured transform (generate.py): Ollama | Claude | Gemini | OpenAI-compatible → LLMTransformOutput
         ├──▶ static validation (validate_output.py): parses + no leaked deprecated APIs
         └──▶ sandbox execution + self-repair (sandbox.py): run vs qiskit==target, feed errors back
 ```
@@ -38,7 +38,7 @@ old code ──▶ AST symbol extraction (symbols.py)
 - **Embeddings:** local `BAAI/bge-large-en-v1.5` on GPU (default), 1024-d — matches the Pinecone index. Cohere is an alternate. Pluggable via `EMBEDDING_PROVIDER`.
 - **Vector store:** managed **Pinecone** (index `qiskit-documentation`, dim 1024, cosine) — **12,163 vectors** ingested (current_api + release_notes + migration_guides + guides).
 - **Rerank:** Cohere (query-time, low volume) or no-op.
-- **LLM:** pluggable via `LLM_PROVIDER` — `ollama` (local/free, default in practice), `anthropic` (Claude), `gemini`.
+- **LLM:** pluggable via `LLM_PROVIDER` — `ollama` (local/free, default in practice), `anthropic` (Claude), `gemini`, `openai` (any OpenAI-compatible endpoint: Groq | OpenRouter | Cerebras | GitHub Models, several free).
 - **Deprecation knowledge:** curated seed (`src/migration/data/known_deprecations.json`) + heuristic release-note parser → SQLite table (`app.db`).
 - **Serving:** FastAPI (`/migrate`, `/jobs/{id}`, `/healthz`, `/readyz`, `/metrics`) + RQ worker + Streamlit UI.
 
@@ -145,11 +145,11 @@ LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   #
 | Concern | Default | Options | Switch |
 |---|---|---|---|
 | Embeddings | `local` (BGE on GPU) | local, cohere | `EMBEDDING_PROVIDER` |
-| LLM (generation) | config says `gemini`; we use `ollama` | gemini, anthropic, ollama | `LLM_PROVIDER` |
+| LLM (generation) | config says `gemini`; we use `ollama` | gemini, anthropic, ollama, openai (compatible) | `LLM_PROVIDER` |
 | Rerank | Cohere if key + `RERANK_ENABLED` | else no-op | `RERANK_ENABLED` |
 | Sandbox | `none` | none, local, docker | `SANDBOX_BACKEND` |
 
-**LLM notes:** Gemini free tier on this account = `pro` 0/day, `flash` 20/day (exhausts fast). Claude needs a paid **Developer Platform** key (`ANTHROPIC_API_KEY`) — **Claude Max ≠ API credits**. **Ollama is the free/unlimited local choice** and scored best on the eval. Free cloud alternatives researched: Groq, OpenRouter, Cerebras.
+**LLM notes:** Gemini free tier on this account = `pro` 0/day, `flash` 20/day (exhausts fast). Claude needs a paid **Developer Platform** key (`ANTHROPIC_API_KEY`) — **Claude Max ≠ API credits**. **Ollama is the free/unlimited local choice** and scored best on the eval. **For a powerful *free cloud* generator, use `LLM_PROVIDER=openai`** (`OpenAICompatibleGenerator`) — one driver for any OpenAI-compatible endpoint; set `OPENAI_BASE_URL`/`OPENAI_API_KEY`/`OPENAI_MODEL`. Free presets in `.env.example`: **Groq** (Llama-3.3-70B, fast), **Cerebras** (~1M tok/day), **OpenRouter** (`qwen/qwen3-coder:free`, DeepSeek), **GitHub Models** (free GPT-4o / Claude-3.5-Sonnet for devs). Prefer a tool/function-calling model so structured output works; Qwen/DeepSeek may need `OPENAI_STRUCTURED_METHOD=json_schema` or the schema-in-prompt fallback. The 7B local model can't do the hardest rewrites (opflow→primitives); a frontier model via this provider is the lever (Gemini got ~90% on `build/old_complex.py`).
 
 ---
 

@@ -43,11 +43,20 @@ class Settings(BaseSettings):
     rerank_model: str = "rerank-english-v3.0"  # Cohere reranker (query-time, low volume)
 
     # --- Generation LLM ---
-    llm_provider: str = "gemini"  # gemini | anthropic | ollama
+    llm_provider: str = "gemini"  # gemini | anthropic | ollama | openai
     gemini_model: str = "gemini-2.5-flash"  # free-tier friendly; pro is limit 0 on free tier
     anthropic_model: str = "claude-sonnet-4-6"
     ollama_model: str = "qwen2.5-coder:7b"  # local, free, code-capable; fits 8GB VRAM
     ollama_base_url: str = "http://localhost:11434"
+    # OpenAI-compatible provider — one generator for Groq | OpenRouter | Cerebras | GitHub Models.
+    # Set base_url + key + model for your provider; many have a free tier. Prefer a tool/function-
+    # calling-capable model so structured output works (e.g. GPT-4o, Llama-3.3-70B, Qwen3-Coder).
+    openai_api_key: str | None = None
+    openai_base_url: str | None = (
+        None  # e.g. https://api.groq.com/openai/v1, https://openrouter.ai/api/v1
+    )
+    openai_model: str = "llama-3.3-70b-versatile"  # provider-specific id; override per provider
+    openai_structured_method: str = "function_calling"  # function_calling | json_schema | json_mode
     # Cohere embedding throughput controls — raise the throttle for rate-limited trial keys.
     embed_throttle_s: float = 0.0
     embed_retry_cooldown_s: int = 65

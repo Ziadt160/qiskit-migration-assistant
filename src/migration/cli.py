@@ -70,6 +70,8 @@ def _missing_keys(settings: Settings) -> list[str]:
         missing.append("GEMINI_API_KEY")
     if settings.llm_provider == "anthropic" and not settings.anthropic_api_key:
         missing.append("ANTHROPIC_API_KEY")
+    if settings.llm_provider in ("openai", "openai_compatible") and not settings.openai_api_key:
+        missing.append("OPENAI_API_KEY")
     return missing
 
 
