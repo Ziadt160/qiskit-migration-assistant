@@ -268,5 +268,50 @@
     "replacement": "QuantumCircuit.unitary",
     "note": "The QuantumCircuit.squ() single-qubit-unitary method was removed in 1.0. Use QuantumCircuit.unitary() instead.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.circuit.library.TwoLocal",
+    "status": "deprecated",
+    "since_version": "2.1",
+    "removed_in": "3.0",
+    "replacement": "qiskit.circuit.library.n_local",
+    "note": "Deprecated in Qiskit 2.1 (removed in 3.0): the TwoLocal ansatz class became a builder function. Import as `from qiskit.circuit.library import n_local` and call n_local(...), which returns a QuantumCircuit. There is no `qiskit.circuit.library.two_local` submodule to import from.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.circuit.library.EfficientSU2",
+    "status": "deprecated",
+    "since_version": "2.1",
+    "removed_in": "3.0",
+    "replacement": "qiskit.circuit.library.efficient_su2",
+    "note": "Deprecated in Qiskit 2.1 (removed in 3.0): the EfficientSU2 class became a builder function. Import as `from qiskit.circuit.library import efficient_su2`. There is no `qiskit.circuit.library.efficient_su2` submodule to import from.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.circuit.library.RealAmplitudes",
+    "status": "deprecated",
+    "since_version": "2.1",
+    "removed_in": "3.0",
+    "replacement": "qiskit.circuit.library.real_amplitudes",
+    "note": "Deprecated in Qiskit 2.1 (removed in 3.0): use the builder function `from qiskit.circuit.library import real_amplitudes`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.circuit.library.NLocal",
+    "status": "deprecated",
+    "since_version": "2.1",
+    "removed_in": "3.0",
+    "replacement": "qiskit.circuit.library.n_local",
+    "note": "Deprecated in Qiskit 2.1 (removed in 3.0): use the builder function `from qiskit.circuit.library import n_local` (applies to NLocal subclasses too).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.circuit.library.QFT",
+    "status": "deprecated",
+    "since_version": "2.1",
+    "removed_in": "3.0",
+    "replacement": "qiskit.circuit.library.QFTGate",
+    "note": "Deprecated in Qiskit 2.1 (removed in 3.0): use `from qiskit.circuit.library import QFTGate` (a gate you append to a circuit), or qiskit.synthesis.synth_qft_full for a synthesized circuit.",
+    "source": "curated-seed"
   }
 ]
