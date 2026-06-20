@@ -34,3 +34,19 @@ def test_syntax_error_is_flagged(store):
     report = validate_output("def f(:\n    pass", store, "2.2")
     assert report.syntax_ok is False
     assert not report.passed
+
+
+def test_aer_from_qiskit_aer_is_not_a_false_positive(store):
+    # Root-1 regression guard: a migration that correctly imports Aer from qiskit_aer must
+    # NOT be flagged as still using the removed qiskit.Aer (identity, not shared last segment).
+    code = "from qiskit_aer import Aer\nbackend = Aer.get_backend('qasm_simulator')\n"
+    report = validate_output(code, store, "2.2")
+    assert "qiskit.Aer" not in report.deprecated_symbols
+    assert report.passed
+
+
+def test_old_aer_import_is_still_flagged(store):
+    # The genuinely-removed import is still caught — by full identity.
+    code = "from qiskit import Aer\nbackend = Aer.get_backend('qasm_simulator')\n"
+    report = validate_output(code, store, "2.2")
+    assert "qiskit.Aer" in report.deprecated_symbols
