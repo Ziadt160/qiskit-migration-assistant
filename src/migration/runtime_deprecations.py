@@ -27,10 +27,15 @@ import logging
 import re
 
 from src.config import get_settings
+from src.migration.deprecations import DeprecationRecord
 from src.migration.models import RuntimeDeprecation, RuntimeDeprecationReport
 from src.migration.sandbox import Sandbox
 
 logger = logging.getLogger(__name__)
+
+# Deprecation surfaced in a sandbox traceback (a `-W error::DeprecationWarning` run): the
+# offending warning lands as the final ``DeprecationWarning: <message>`` line.
+_STDERR_WARN_RE = re.compile(r"(?:Deprecation|PendingDeprecation|Future)Warning: (.+)")
 
 _CAPTURE = 2_000_000  # warning dumps can be large; override the sandbox's default 4 KB cap
 _BEGIN = "__RTDEP1__"
@@ -144,6 +149,61 @@ def _parse_message(message: str) -> tuple[str | None, str | None, str | None, st
         (since.group(1) if since else None),
         (removed.group(1) if removed else None),
     )
+
+
+def deprecations_from_stderr(stderr: str) -> list[RuntimeDeprecation]:
+    """Recover deprecation records from a sandbox traceback (a warnings-as-errors run).
+
+    The pipeline's validation sandbox runs with ``-W error::DeprecationWarning``, so the
+    first offending deprecation aborts the run with a ``DeprecationWarning: <message>``
+    line. This parses those messages — the *target library's own* authoritative signal,
+    current for whatever version the sandbox runs — into structured records.
+    """
+    out: list[RuntimeDeprecation] = []
+    seen: set[tuple[str | None, str | None]] = set()
+    for raw in _STDERR_WARN_RE.findall(stderr or ""):
+        message = raw.strip()
+        symbol, replacement, since, removed = _parse_message(message)
+        key = (symbol, removed)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(
+            RuntimeDeprecation(
+                symbol=symbol,
+                replacement=replacement,
+                since_version=since,
+                removed_in=removed,
+                category="DeprecationWarning",
+                message=message,
+            )
+        )
+    return out
+
+
+def to_records(rdeps: list[RuntimeDeprecation]) -> list[DeprecationRecord]:
+    """Convert captured runtime deprecations into authoritative-tier ``DeprecationRecord``s.
+
+    Lets the migration loop treat what the *target library itself* flagged as first-class
+    deprecation knowledge (``source="runtime-sandbox"``) — version-current by construction,
+    no static harvest required. Records without a parseable symbol are dropped.
+    """
+    records: list[DeprecationRecord] = []
+    for d in rdeps:
+        if not d.symbol:
+            continue
+        records.append(
+            DeprecationRecord(
+                symbol=d.symbol,
+                status="deprecated",
+                since_version=d.since_version,
+                removed_in=d.removed_in,
+                replacement=d.replacement,
+                note=d.message[:300],
+                source="runtime-sandbox",
+            )
+        )
+    return records
 
 
 def capture_runtime_deprecations(code: str, sandbox: Sandbox) -> RuntimeDeprecationReport:

@@ -26,7 +26,11 @@ from src.migration.validate_output import validate_output
 logger = logging.getLogger(__name__)
 
 
-def _build_feedback(execution: SandboxReport | None, report: ValidationReport) -> str:
+def _build_feedback(
+    execution: SandboxReport | None,
+    report: ValidationReport,
+    runtime_records: list[DeprecationRecord] | None = None,
+) -> str:
     """Compose actionable feedback for a repair attempt from the failures observed."""
     parts: list[str] = []
     if execution is not None and not execution.ok:
@@ -37,6 +41,17 @@ def _build_feedback(execution: SandboxReport | None, report: ValidationReport) -
                 f"The ported code failed to run (error: {execution.error_type or 'unknown'}).\n"
                 f"stderr:\n{execution.stderr.strip()[:1500]}"
             )
+    # Root-2: the target library itself flagged these at runtime — authoritative + current.
+    if runtime_records:
+        lines = [
+            f"- `{r.symbol}` is deprecated/removed on the target"
+            + (f" -> use `{r.replacement}`" if r.replacement else " (see message)")
+            for r in runtime_records
+        ]
+        parts.append(
+            "The target Qiskit raised DeprecationWarnings at runtime. These MUST be migrated "
+            "(apply the suggested replacement):\n" + "\n".join(lines)
+        )
     if report.deprecated_symbols:
         parts.append(
             "These symbols are still deprecated/removed on the target version and must "
@@ -45,6 +60,29 @@ def _build_feedback(execution: SandboxReport | None, report: ValidationReport) -
     if not report.syntax_ok:
         parts.append("The ported code does not parse as valid Python.")
     return "\n\n".join(parts) or "(none)"
+
+
+def _merge_runtime_deprecations(
+    existing: list[DeprecationRecord],
+    execution: SandboxReport | None,
+    base_deps: list[DeprecationRecord],
+) -> list[DeprecationRecord]:
+    """Learn deprecations from a failed sandbox run and add the new ones to the running set.
+
+    The target library's own runtime warnings (e.g. a 2.1-era ``TwoLocal`` deprecation the
+    static table never harvested) are parsed into records and merged, deduped by symbol
+    against what we already know — closing the loop so detection stays current with the
+    real target version, not a frozen snapshot.
+    """
+    if execution is None or execution.ok or not execution.stderr:
+        return existing
+    from src.migration.runtime_deprecations import deprecations_from_stderr, to_records
+
+    known = {r.symbol for r in existing} | {d.symbol for d in base_deps}
+    fresh = [
+        r for r in to_records(deprecations_from_stderr(execution.stderr)) if r.symbol not in known
+    ]
+    return existing + fresh
 
 
 def find_deprecations(
@@ -128,6 +166,9 @@ class MigrationTransformer:
         feedback: str | None = None
         execution: SandboxReport | None = None
         attempts = 0
+        # Root-2: deprecations the target library flags at runtime become authoritative deps,
+        # so the loop is version-complete by construction (no static re-harvest needed).
+        runtime_records: list[DeprecationRecord] = []
         llm_out = self.generator.transform(code, deps, chunks, source_version, feedback=feedback)
         report = validate_output(llm_out.ported_code, self.store, self.target_version)
 
@@ -137,9 +178,10 @@ class MigrationTransformer:
             if healthy or attempts >= self.max_repairs:
                 break
             attempts += 1
-            feedback = _build_feedback(execution, report)
+            runtime_records = _merge_runtime_deprecations(runtime_records, execution, deps)
+            feedback = _build_feedback(execution, report, runtime_records)
             llm_out = self.generator.transform(
-                code, deps, chunks, source_version, feedback=feedback
+                code, deps + runtime_records, chunks, source_version, feedback=feedback
             )
             report = validate_output(llm_out.ported_code, self.store, self.target_version)
 
@@ -158,11 +200,11 @@ class MigrationTransformer:
             ported_code=llm_out.ported_code,
             changes=llm_out.changes,
             warnings=warnings + list(llm_out.warnings),
-            deprecations_found=[_to_hit(d) for d in deps],
+            deprecations_found=[_to_hit(d) for d in (deps + runtime_records)],
             retrieval_sources=[c.get("source", "") for c in chunks],
             validation=report,
             execution=execution,
             repair_attempts=attempts,
-            coverage=compute_coverage(llm_out.ported_code, deps, report),
+            coverage=compute_coverage(llm_out.ported_code, deps + runtime_records, report),
             equivalence=equivalence,
         )
