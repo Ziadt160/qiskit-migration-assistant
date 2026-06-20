@@ -55,6 +55,28 @@ def test_store_lookup_finds_execute(tmp_path):
     assert any(r.replacement == "backend.run" for r in results)
 
 
+def test_qiskit_2_1_ansatz_deprecations_have_verified_replacements(tmp_path):
+    # The 2.1-era circuit-library deprecations must carry the correct importable replacement
+    # (not a guessed submodule path) so the LLM doesn't emit e.g.
+    # `from qiskit.circuit.library.efficient_su2 import efficient_su2`.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+
+    expected = {
+        "qiskit.circuit.library.TwoLocal": "qiskit.circuit.library.n_local",
+        "qiskit.circuit.library.EfficientSU2": "qiskit.circuit.library.efficient_su2",
+        "qiskit.circuit.library.RealAmplitudes": "qiskit.circuit.library.real_amplitudes",
+        "qiskit.circuit.library.QFT": "qiskit.circuit.library.QFTGate",
+    }
+    for symbol, replacement in expected.items():
+        results = store.lookup({symbol})
+        rec = next((r for r in results if r.symbol == symbol), None)
+        assert rec is not None, f"{symbol} not detected"
+        assert rec.replacement == replacement
+        assert rec.status == "deprecated" and rec.removed_in == "3.0"
+
+
 def test_store_lookup_by_last_segment(tmp_path):
     store = DeprecationStore(str(tmp_path / "dep.db"))
     store.create()
