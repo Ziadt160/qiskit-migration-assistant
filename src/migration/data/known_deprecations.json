@@ -313,5 +313,41 @@
     "replacement": "qiskit.circuit.library.QFTGate",
     "note": "Deprecated in Qiskit 2.1 (removed in 3.0): use `from qiskit.circuit.library import QFTGate` (a gate you append to a circuit), or qiskit.synthesis.synth_qft_full for a synthesized circuit.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.chemistry",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_nature",
+    "note": "The qiskit.chemistry application module (Qiskit Aqua era) was split out of the metapackage and is now the standalone qiskit-nature package. Install qiskit-nature and import from qiskit_nature (APIs were restructured too).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.finance",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance",
+    "note": "The qiskit.finance application module became the standalone qiskit-finance package. Install qiskit-finance and import from qiskit_finance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.optimization",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_optimization",
+    "note": "The qiskit.optimization application module became the standalone qiskit-optimization package. Install qiskit-optimization and import from qiskit_optimization.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.ml",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning",
+    "note": "The qiskit.ml application module became the standalone qiskit-machine-learning package. Install qiskit-machine-learning and import from qiskit_machine_learning.",
+    "source": "curated-seed"
   }
 ]

@@ -77,6 +77,32 @@ def test_qiskit_2_1_ansatz_deprecations_have_verified_replacements(tmp_path):
         assert rec.status == "deprecated" and rec.removed_in == "3.0"
 
 
+def test_pre_046_application_modules_map_to_standalone_packages(tmp_path):
+    # The Aqua-era application modules were split out before 0.46, so the 0.46->2.0 Griffe
+    # harvest can't see them — they must be curated, mapping to their standalone packages.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+
+    expected = {
+        "qiskit.chemistry": "qiskit_nature",
+        "qiskit.finance": "qiskit_finance",
+        "qiskit.optimization": "qiskit_optimization",
+        "qiskit.ml": "qiskit_machine_learning",
+    }
+    for symbol, replacement in expected.items():
+        rec = next((r for r in store.lookup({symbol}) if r.symbol == symbol), None)
+        assert rec is not None and rec.replacement == replacement
+
+
+def test_ml_segment_does_not_false_positive(tmp_path):
+    # A bare `.ml()` call must NOT be flagged as the removed `qiskit.ml` module.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+    assert not any(r.symbol == "qiskit.ml" for r in store.lookup({"ml"}))
+
+
 def test_store_lookup_by_last_segment(tmp_path):
     store = DeprecationStore(str(tmp_path / "dep.db"))
     store.create()
