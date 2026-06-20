@@ -1,10 +1,12 @@
-"""Pluggable code-transformation generator (Gemini or Claude).
+"""Pluggable code-transformation generator (Gemini | Claude | Ollama | OpenAI-compatible).
 
 Given the user's old code plus authoritative deprecation records and retrieved
 documentation, the configured LLM returns a *structured* `LLMTransformOutput`
 (ported code + per-change rationale + warnings). Provider is selected by
-`LLM_PROVIDER` (gemini | anthropic). Both share the same prompt and schema, so
-output is interchangeable and the eval can compare them directly.
+`LLM_PROVIDER` (gemini | anthropic | ollama | openai). The `openai` provider is any
+OpenAI-compatible endpoint (Groq, OpenRouter, Cerebras, GitHub Models, …) — one driver
+for the whole ecosystem, several with free tiers. All share the same prompt and schema,
+so output is interchangeable and the eval can compare them directly.
 
 Provider SDKs are imported lazily inside each generator, so this module loads
 without either installed.
@@ -260,6 +262,62 @@ class OllamaGenerator:
         return _postprocess(self.chain.invoke(variables))
 
 
+class OpenAICompatibleGenerator:
+    """Any OpenAI-compatible endpoint via langchain structured output.
+
+    One generator for the whole OpenAI-API-speaking ecosystem — Groq, OpenRouter, Cerebras,
+    GitHub Models, NVIDIA, Together, … (many with a free tier). Point it at a provider with
+    ``OPENAI_BASE_URL`` + ``OPENAI_API_KEY`` + ``OPENAI_MODEL``. Use a model that supports
+    tool/function calling so ``with_structured_output`` returns a validated ``LLMTransformOutput``
+    (GPT-4o, Llama-3.3-70B, Qwen3-Coder, …); switch the structured-output method per provider
+    via ``OPENAI_STRUCTURED_METHOD`` if needed.
+    """
+
+    def __init__(self) -> None:
+        settings = get_settings()
+        # Check config before importing the SDK, so a missing key is a clear ValueError rather
+        # than a ModuleNotFoundError (the trap that previously broke CI for anthropic).
+        if not settings.openai_api_key:
+            raise ValueError(
+                "Missing OPENAI_API_KEY in environment/.env (any OpenAI-compatible key: "
+                "Groq / OpenRouter / Cerebras / GitHub Models). "
+                "Also set OPENAI_BASE_URL + OPENAI_MODEL."
+            )
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_openai import ChatOpenAI
+
+        self.target_version = settings.qiskit_target_version
+        llm = ChatOpenAI(
+            model=settings.openai_model,
+            api_key=settings.openai_api_key,
+            base_url=settings.openai_base_url or None,
+            temperature=0,
+        )
+        prompt = ChatPromptTemplate.from_messages([("system", _SYSTEM), ("human", _HUMAN)])
+        self.chain = prompt | llm.with_structured_output(
+            LLMTransformOutput, method=settings.openai_structured_method
+        )
+
+    @retry(
+        retry=retry_if_exception(_is_transient_llm_error),
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, min=4, max=40),
+        reraise=True,
+    )
+    def transform(
+        self,
+        code: str,
+        deprecations: list[DeprecationRecord],
+        context_chunks: list[dict],
+        source_version: str | None = None,
+        feedback: str | None = None,
+    ) -> LLMTransformOutput:
+        variables = _prompt_vars(
+            code, deprecations, context_chunks, source_version, feedback, self.target_version
+        )
+        return _postprocess(self.chain.invoke(variables))
+
+
 def get_generator() -> Generator:
     provider = get_settings().llm_provider.lower()
     if provider == "gemini":
@@ -268,8 +326,10 @@ def get_generator() -> Generator:
         return AnthropicGenerator()
     if provider == "ollama":
         return OllamaGenerator()
+    if provider in ("openai", "openai_compatible"):
+        return OpenAICompatibleGenerator()
     raise ValueError(
-        f"Unknown LLM_PROVIDER: {provider!r} (use 'gemini', 'anthropic', or 'ollama')."
+        f"Unknown LLM_PROVIDER: {provider!r} (use 'gemini', 'anthropic', 'ollama', or 'openai')."
     )
 
 

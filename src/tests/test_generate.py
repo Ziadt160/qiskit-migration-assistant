@@ -94,3 +94,31 @@ def test_get_generator_ollama_no_key_needed(monkeypatch):
     )
     generator = get_generator()  # local; constructs without a key or network
     assert type(generator).__name__ == "OllamaGenerator"
+
+
+def test_get_generator_openai_requires_key(monkeypatch):
+    # Config is checked before the SDK import, so a missing key is a clear ValueError.
+    monkeypatch.setattr(
+        gen,
+        "get_settings",
+        lambda: Settings(_env_file=None, llm_provider="openai", openai_api_key=None),
+    )
+    with pytest.raises(ValueError, match="OPENAI_API_KEY"):
+        get_generator()
+
+
+def test_get_generator_openai_constructs_without_network(monkeypatch):
+    pytest.importorskip("langchain_openai")
+    monkeypatch.setattr(
+        gen,
+        "get_settings",
+        lambda: Settings(
+            _env_file=None,
+            llm_provider="openai",
+            openai_api_key="sk-test-not-real",
+            openai_base_url="https://openrouter.ai/api/v1",
+            openai_model="meta-llama/llama-3.3-70b-instruct",
+        ),
+    )
+    generator = get_generator()  # construction is lazy — no network call until .transform()
+    assert type(generator).__name__ == "OpenAICompatibleGenerator"
