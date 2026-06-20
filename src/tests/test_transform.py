@@ -60,9 +60,11 @@ class _SeqGenerator:
         self._outputs = list(outputs)
         self.calls = 0
         self.feedbacks = []
+        self.deps_seen: list[list] = []  # the deps list passed on each call
 
     def transform(self, code, deps, chunks, source_version=None, feedback=None):
         self.feedbacks.append(feedback)
+        self.deps_seen.append(list(deps))
         out = self._outputs[min(self.calls, len(self._outputs) - 1)]
         self.calls += 1
         return out
@@ -166,6 +168,45 @@ def test_passthrough_runs_sandbox_when_configured(store):
 
     assert result.execution is not None and result.execution.ok
     assert sandbox.i == 1  # the (unchanged) input was run exactly once
+
+
+def test_runtime_deprecation_grounds_repair(store):
+    # Root-2 closed loop: the sandbox fails on a 2.1-era TwoLocal DeprecationWarning the static
+    # table never harvested; the loop must parse it, add it to the next generation's deps as an
+    # authoritative runtime record, and surface it in the result — version-current by construction.
+    twolocal_stderr = (
+        "Traceback (most recent call last):\n"
+        '  File "/work/snippet.py", line 1, in <module>\n'
+        "DeprecationWarning: The class ``qiskit.circuit.library.n_local.two_local.TwoLocal`` is "
+        "deprecated as of Qiskit 2.1. It will be removed in Qiskit 3.0. Use the function "
+        "qiskit.circuit.library.n_local instead."
+    )
+    gen = _SeqGenerator(
+        [LLMTransformOutput(ported_code=_GOOD), LLMTransformOutput(ported_code=_GOOD)]
+    )
+    sandbox = _FakeSandbox(
+        [
+            SandboxReport(
+                backend="fake", ok=False, error_type="DeprecationWarning", stderr=twolocal_stderr
+            ),
+            SandboxReport(backend="fake", ok=True, returncode=0),
+        ]
+    )
+    transformer = MigrationTransformer(
+        store, _FakeRetriever(), gen, target_version="2.2", sandbox=sandbox, max_repairs=2
+    )
+
+    result = transformer.transform("from qiskit import execute\nexecute(qc, backend)\n")
+
+    assert result.repair_attempts == 1
+    # The repair generation received the runtime-learned record in its authoritative deps.
+    repair_deps = gen.deps_seen[1]
+    learned = [d for d in repair_deps if d.symbol.endswith("TwoLocal")]
+    assert learned and learned[0].source == "runtime-sandbox"
+    assert learned[0].replacement == "qiskit.circuit.library.n_local"
+    # It also surfaces in the result and in the repair feedback.
+    assert any(h.symbol.endswith("TwoLocal") for h in result.deprecations_found)
+    assert "TwoLocal" in (gen.feedbacks[1] or "")
 
 
 def test_self_repair_gives_up_after_max_repairs(store):

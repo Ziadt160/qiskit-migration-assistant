@@ -88,6 +88,27 @@ class EquivalenceReport(BaseModel):
     note: str = ""
 
 
+class RuntimeDeprecation(BaseModel):
+    """A deprecation the *real library* emitted while executing the code."""
+
+    symbol: str | None = None  # deprecated object, parsed from the warning message
+    replacement: str | None = None  # official "Use X instead" guidance, when present
+    since_version: str | None = None
+    removed_in: str | None = None
+    category: str = "DeprecationWarning"
+    message: str = ""  # the full warning text (authoritative; never lossy)
+    user_lineno: int | None = None  # line in the user's snippet, when resolvable
+
+
+class RuntimeDeprecationReport(BaseModel):
+    """What deprecations the user's code actually triggered on a legacy Qiskit image."""
+
+    backend: str
+    ran: bool
+    deprecations: list[RuntimeDeprecation] = Field(default_factory=list)
+    note: str = ""
+
+
 class CoverageSummary(BaseModel):
     """How much of the detected deprecation surface the migration actually resolved."""
 

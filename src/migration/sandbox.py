@@ -120,8 +120,16 @@ class DockerSandbox:
                 proc = subprocess.run(
                     cmd, capture_output=True, text=True, timeout=self.timeout_s + 30
                 )
-            except subprocess.TimeoutExpired:
-                return SandboxReport(backend=self.backend, ok=False, timed_out=True)
+            except subprocess.TimeoutExpired as e:
+                # Preserve any output produced before the kill — incrementally-streamed results
+                # (e.g. runtime_deprecations sentinels) are still usable from a timed-out run.
+                return SandboxReport(
+                    backend=self.backend,
+                    ok=False,
+                    timed_out=True,
+                    stdout=(e.stdout or "")[:cap] if isinstance(e.stdout, str) else "",
+                    stderr=(e.stderr or "")[:cap] if isinstance(e.stderr, str) else "",
+                )
             except FileNotFoundError as e:
                 logger.error("Docker not available: %s", e)
                 return SandboxReport(
