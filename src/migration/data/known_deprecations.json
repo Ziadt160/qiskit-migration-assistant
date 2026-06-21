@@ -502,5 +502,14 @@
     "replacement": null,
     "note": "QGAN moved to qiskit-machine-learning and was subsequently removed; no current drop-in replacement.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library",
+    "note": "Aqua uncertainty models (NormalDistribution, LogNormalDistribution, GaussianConditionalIndependenceModel, ...) moved to qiskit-finance: `from qiskit_finance.circuit.library import NormalDistribution, LogNormalDistribution`.",
+    "source": "curated-seed"
   }
 ]
