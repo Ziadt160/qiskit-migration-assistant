@@ -359,6 +359,12 @@ A single-VM Docker Compose topology. Images pin Python 3.12 (heavy compiled whee
   (several with a free tier); `LLM_PROVIDER=openai`. Use a powerful frontier model for free.
 - **Version coverage 0.2x → 2.1** — Aqua-era application modules (chemistry/finance/optimization/
   ml) through the newest 2.1 ansatz-function deprecations (TwoLocal → `n_local`, …).
+- **Automated cross-package harvest** — `harvest.py --mode cross-package` enumerates a legacy
+  package's API surface in a throwaway container (e.g. `qiskit-aqua==0.9.0` on py3.9) and
+  name-matches every symbol to an index of the ecosystem on the target image, promoting the
+  *moved-same-name* symbols as sandbox-verified records. Griffe only diffs one package across
+  versions, so it's blind to cross-package moves (`qiskit.aqua` → `qiskit-algorithms/…`); this
+  closes that gap. Renames (QSVM → QSVC) aren't name-matchable and stay curated.
 - **No-op safety** — already-modern code is returned verbatim; the LLM never rewrites what the
   authoritative table says isn't deprecated.
 
