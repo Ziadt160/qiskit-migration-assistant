@@ -55,6 +55,54 @@ def test_store_lookup_finds_execute(tmp_path):
     assert any(r.replacement == "backend.run" for r in results)
 
 
+def test_qiskit_2_1_ansatz_deprecations_have_verified_replacements(tmp_path):
+    # The 2.1-era circuit-library deprecations must carry the correct importable replacement
+    # (not a guessed submodule path) so the LLM doesn't emit e.g.
+    # `from qiskit.circuit.library.efficient_su2 import efficient_su2`.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+
+    expected = {
+        "qiskit.circuit.library.TwoLocal": "qiskit.circuit.library.n_local",
+        "qiskit.circuit.library.EfficientSU2": "qiskit.circuit.library.efficient_su2",
+        "qiskit.circuit.library.RealAmplitudes": "qiskit.circuit.library.real_amplitudes",
+        "qiskit.circuit.library.QFT": "qiskit.circuit.library.QFTGate",
+    }
+    for symbol, replacement in expected.items():
+        results = store.lookup({symbol})
+        rec = next((r for r in results if r.symbol == symbol), None)
+        assert rec is not None, f"{symbol} not detected"
+        assert rec.replacement == replacement
+        assert rec.status == "deprecated" and rec.removed_in == "3.0"
+
+
+def test_pre_046_application_modules_map_to_standalone_packages(tmp_path):
+    # The Aqua-era application modules were split out before 0.46, so the 0.46->2.0 Griffe
+    # harvest can't see them — they must be curated, mapping to their standalone packages.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+
+    expected = {
+        "qiskit.chemistry": "qiskit_nature",
+        "qiskit.finance": "qiskit_finance",
+        "qiskit.optimization": "qiskit_optimization",
+        "qiskit.ml": "qiskit_machine_learning",
+    }
+    for symbol, replacement in expected.items():
+        rec = next((r for r in store.lookup({symbol}) if r.symbol == symbol), None)
+        assert rec is not None and rec.replacement == replacement
+
+
+def test_ml_segment_does_not_false_positive(tmp_path):
+    # A bare `.ml()` call must NOT be flagged as the removed `qiskit.ml` module.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+    assert not any(r.symbol == "qiskit.ml" for r in store.lookup({"ml"}))
+
+
 def test_store_lookup_by_last_segment(tmp_path):
     store = DeprecationStore(str(tmp_path / "dep.db"))
     store.create()
