@@ -15,6 +15,7 @@ from src.migration.harvest import (
     _candidates_from_breakages,
     _extract_replacement,
     _is_public,
+    cross_package_candidates,
     harvest_candidates,
 )
 from src.migration.models import SandboxReport
@@ -94,6 +95,58 @@ def test_candidates_dedupe_by_segment_keeps_shortest():
         "qiskit.circuit.quantumcircuit.QuantumCircuit.diagonal",
         "qiskit.transpiler.synthesis.graysynth",
     ]
+
+
+def test_cross_package_candidates_name_matches_to_ecosystem():
+    # A moved-same-name symbol becomes a candidate pointing at its ecosystem home; a symbol
+    # with no ecosystem match and a skipped utility/base name are both dropped.
+    old_symbols = {
+        "VQE": "qiskit.aqua.algorithms.VQE",
+        "COBYLA": "qiskit.aqua.components.optimizers.COBYLA",
+        "AquaError": "qiskit.aqua.aqua_error.AquaError",  # utility -> skipped
+        "SomeAquaOnlyThing": "qiskit.aqua.legacy.SomeAquaOnlyThing",  # no eco match -> dropped
+    }
+    eco_index = {
+        "VQE": "qiskit_algorithms.VQE",
+        "COBYLA": "qiskit_algorithms.optimizers.COBYLA",
+        "AquaError": "qiskit_algorithms.AquaError",  # exists but the source name is skipped
+    }
+    cands = cross_package_candidates(
+        old_symbols, eco_index, skip_names={"AquaError"}, removed_in="1.0"
+    )
+    by_symbol = {c["symbol"]: c for c in cands}
+    assert set(by_symbol) == {
+        "qiskit.aqua.algorithms.VQE",
+        "qiskit.aqua.components.optimizers.COBYLA",
+    }
+    vqe = by_symbol["qiskit.aqua.algorithms.VQE"]
+    assert vqe["replacement"] == "qiskit_algorithms.VQE"
+    assert vqe["status"] == "moved" and vqe["removed_in"] == "1.0"
+
+
+def test_cross_package_candidates_feed_verify_and_promote(tmp_path):
+    # End-to-end on the pure stages: a name-matched candidate whose old path is absent on the
+    # target and whose ecosystem replacement imports gets promoted as a 'moved' record; a
+    # coincidental name collision whose old path still resolves on the target is rejected.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    old_symbols = {
+        "VQE": "qiskit.aqua.algorithms.VQE",
+        "transpile": "qiskit.aqua.transpile",  # collides with a live target symbol -> rejected
+    }
+    eco_index = {"VQE": "qiskit_algorithms.VQE", "transpile": "qiskit.transpile"}
+    candidates = cross_package_candidates(old_symbols, eco_index)
+    # FakeSandbox: replacement imports clean; the aqua paths are absent EXCEPT the colliding
+    # 'qiskit.aqua.transpile' is (wrongly) reported present to simulate a non-removal.
+    sandbox = FakeSandbox(present={"qiskit_algorithms.VQE", "qiskit.aqua.transpile"})
+
+    report = harvest_candidates(candidates, sandbox, store=store, method="cross-package name-match")
+
+    assert {r.symbol for r in report.records} == {"qiskit.aqua.algorithms.VQE"}
+    rec = report.records[0]
+    assert rec.status == "moved"
+    assert rec.replacement == "qiskit_algorithms.VQE"
+    assert "cross-package name-match" in rec.note and "moved" in rec.note
 
 
 def test_harvest_candidates_verifies_and_promotes(tmp_path):

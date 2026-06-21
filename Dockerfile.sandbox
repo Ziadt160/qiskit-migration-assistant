@@ -3,13 +3,19 @@
 # and a non-root user. Keep this image minimal and pinned.
 FROM python:3.12-slim
 
-# Pin to the migration target version, plus the packages the gold/migrated code
-# commonly imports (Aer simulator, the split-out algorithms package).
+# Pin to the migration target version, plus the packages migrated code commonly imports:
+# Aer simulator + the standalone Qiskit ecosystem packages (algorithms, nature, finance,
+# optimization, machine-learning). All resolve against qiskit 2.x (qiskit<3.0,>=1.4), so
+# executable validation + runtime-deprecation capture work for ecosystem code too.
 ARG QISKIT_VERSION=2.2.*
 RUN pip install --no-cache-dir \
         "qiskit==${QISKIT_VERSION}" \
         "qiskit-aer" \
         "qiskit-algorithms" \
+        "qiskit-nature" \
+        "qiskit-optimization" \
+        "qiskit-machine-learning" \
+        "qiskit-finance" \
     && useradd --create-home --uid 10001 sandbox
 
 USER sandbox

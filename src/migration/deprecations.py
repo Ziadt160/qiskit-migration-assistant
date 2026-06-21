@@ -59,6 +59,9 @@ _GENERIC_SEGMENTS = {
     # `qiskit.utils.parallel_map` share a last segment. Match the old one by its full
     # symbol only, so the modern replacement isn't flagged as still-deprecated.
     "parallel_map",
+    # Too generic as a bare token (a local ``.ml()`` call or variable would collide).
+    # The removed ``qiskit.ml`` application module matches by full symbol only.
+    "ml",
 }
 
 # Core APIs that are current in the target version and must NEVER be reported as

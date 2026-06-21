@@ -313,5 +313,203 @@
     "replacement": "qiskit.circuit.library.QFTGate",
     "note": "Deprecated in Qiskit 2.1 (removed in 3.0): use `from qiskit.circuit.library import QFTGate` (a gate you append to a circuit), or qiskit.synthesis.synth_qft_full for a synthesized circuit.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.chemistry",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_nature",
+    "note": "The qiskit.chemistry application module (Qiskit Aqua era) was split out of the metapackage and is now the standalone qiskit-nature package. Install qiskit-nature and import from qiskit_nature (APIs were restructured too).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.finance",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance",
+    "note": "The qiskit.finance application module became the standalone qiskit-finance package. Install qiskit-finance and import from qiskit_finance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.optimization",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_optimization",
+    "note": "The qiskit.optimization application module became the standalone qiskit-optimization package. Install qiskit-optimization and import from qiskit_optimization.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.ml",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning",
+    "note": "The qiskit.ml application module became the standalone qiskit-machine-learning package. Install qiskit-machine-learning and import from qiskit_machine_learning.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.providers.ibmq",
+    "status": "removed",
+    "since_version": "0.40",
+    "removed_in": "1.0",
+    "replacement": "qiskit_ibm_runtime",
+    "note": "The legacy IBMQ provider (qiskit.providers.ibmq / qiskit-ibmq-provider) was removed. Use the standalone qiskit-ibm-runtime package: from qiskit_ibm_runtime import QiskitRuntimeService; service = QiskitRuntimeService(); backend = service.backend(...).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QSVM",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning.algorithms.QSVC",
+    "note": "QSVM (kernel-based quantum SVM) moved out of the removed qiskit.aqua into qiskit-machine-learning and was renamed: classifier -> QSVC, regressor -> QSVR, Pegasos variant -> PegasosQSVC. Import as `from qiskit_machine_learning.algorithms import QSVC` (it now takes a quantum kernel, e.g. FidelityQuantumKernel).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQC",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning.algorithms.VQC",
+    "note": "VQC (variational quantum classifier) moved to qiskit-machine-learning: `from qiskit_machine_learning.algorithms import VQC` (use VQR for regression). The constructor signature changed (feature_map/ansatz/optimizer).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQE",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.VQE",
+    "note": "VQE moved to qiskit-algorithms (primitives-based): `from qiskit_algorithms import VQE`; it now takes an Estimator primitive instead of a QuantumInstance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QAOA",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.QAOA",
+    "note": "QAOA moved to qiskit-algorithms (primitives-based): `from qiskit_algorithms import QAOA`; takes a Sampler primitive instead of a QuantumInstance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers",
+    "note": "Aqua optimizers moved to qiskit-algorithms: `from qiskit_algorithms.optimizers import COBYLA, SPSA, ...`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.Grover",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.Grover",
+    "note": "Grover moved to qiskit-algorithms: `from qiskit_algorithms import Grover` (+ AmplificationProblem).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.AmplitudeEstimation",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.AmplitudeEstimation",
+    "note": "Moved to qiskit-algorithms: `from qiskit_algorithms import AmplitudeEstimation` (+ EstimationProblem); primitives-based.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.IterativeAmplitudeEstimation",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.IterativeAmplitudeEstimation",
+    "note": "Moved to qiskit-algorithms: `from qiskit_algorithms import IterativeAmplitudeEstimation`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.NumPyMinimumEigensolver",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.NumPyMinimumEigensolver",
+    "note": "Moved to qiskit-algorithms: `from qiskit_algorithms import NumPyMinimumEigensolver`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.NumPyEigensolver",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.NumPyEigensolver",
+    "note": "Moved to qiskit-algorithms: `from qiskit_algorithms import NumPyEigensolver`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.feature_maps",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit.circuit.library",
+    "note": "Aqua feature maps were ported to the circuit library: `from qiskit.circuit.library import ZZFeatureMap, ZFeatureMap, PauliFeatureMap`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.variational_forms",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit.circuit.library",
+    "note": "Aqua variational forms were ported to the circuit library (e.g. RYRZ/RY -> the n_local builders): `from qiskit.circuit.library import efficient_su2, real_amplitudes, n_local`.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.operators",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.SparsePauliOp",
+    "note": "Aqua operators -> qiskit.opflow (also later removed) -> use qiskit.quantum_info: `from qiskit.quantum_info import SparsePauliOp` for Pauli operators.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.Shor",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": null,
+    "note": "Shor's algorithm was dropped in the Aqua split and has no maintained replacement in qiskit-algorithms.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.HHL",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": null,
+    "note": "The HHL linear solver was dropped in the Aqua split (a tutorial-grade version briefly lived in qiskit-algorithms, then removed); no maintained replacement.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QGAN",
+    "status": "removed",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": null,
+    "note": "QGAN moved to qiskit-machine-learning and was subsequently removed; no current drop-in replacement.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library",
+    "note": "Aqua uncertainty models (NormalDistribution, LogNormalDistribution, GaussianConditionalIndependenceModel, ...) moved to qiskit-finance: `from qiskit_finance.circuit.library import NormalDistribution, LogNormalDistribution`.",
+    "source": "curated-seed"
   }
 ]
