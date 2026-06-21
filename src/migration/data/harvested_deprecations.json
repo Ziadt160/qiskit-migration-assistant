@@ -10375,5 +10375,455 @@
     "replacement": null,
     "note": "Auto-harvested via Griffe API-diff; sandbox-verified removed.",
     "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.ADAM",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.ADAM",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.ADAM).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.AQGD",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.AQGD",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.AQGD).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.AlgorithmResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.AlgorithmResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.AlgorithmResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.AmplitudeEstimation",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.AmplitudeEstimation",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.AmplitudeEstimation).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.AmplitudeEstimationResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.AmplitudeEstimationResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.AmplitudeEstimationResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.BOBYQA",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.BOBYQA",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.BOBYQA).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.CG",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.CG",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.CG).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.COBYLA",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.COBYLA",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.COBYLA).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.CRS",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.CRS",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.CRS).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.DIRECT_L",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.DIRECT_L",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.DIRECT_L).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.DIRECT_L_RAND",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.DIRECT_L_RAND",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.DIRECT_L_RAND).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.ESCH",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.ESCH",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.ESCH).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.Eigensolver",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.Eigensolver",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.Eigensolver).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.EigensolverResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.EigensolverResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.EigensolverResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.GSLS",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.GSLS",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.GSLS).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models.GaussianConditionalIndependenceModel",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library.GaussianConditionalIndependenceModel",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_finance.circuit.library.GaussianConditionalIndependenceModel).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.Grover",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.Grover",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.Grover).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.GroverResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.GroverResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.GroverResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.IMFIL",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.IMFIL",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.IMFIL).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.ISRES",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.ISRES",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.ISRES).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.IterativeAmplitudeEstimation",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.IterativeAmplitudeEstimation",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.IterativeAmplitudeEstimation).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.IterativeAmplitudeEstimationResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.IterativeAmplitudeEstimationResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.IterativeAmplitudeEstimationResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.L_BFGS_B",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.L_BFGS_B",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.L_BFGS_B).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models.LogNormalDistribution",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library.LogNormalDistribution",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_finance.circuit.library.LogNormalDistribution).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.MaximumLikelihoodAmplitudeEstimation",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.MaximumLikelihoodAmplitudeEstimation",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.MaximumLikelihoodAmplitudeEstimation).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.MaximumLikelihoodAmplitudeEstimationResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.MaximumLikelihoodAmplitudeEstimationResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.MaximumLikelihoodAmplitudeEstimationResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.MinimumEigensolver",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.MinimumEigensolver",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.MinimumEigensolver).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.MinimumEigensolverResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.MinimumEigensolverResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.MinimumEigensolverResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.NELDER_MEAD",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.NELDER_MEAD",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.NELDER_MEAD).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.NFT",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.NFT",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.NFT).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models.NormalDistribution",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library.NormalDistribution",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_finance.circuit.library.NormalDistribution).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.NumPyEigensolver",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.NumPyEigensolver",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.NumPyEigensolver).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.NumPyMinimumEigensolver",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.NumPyMinimumEigensolver",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.NumPyMinimumEigensolver).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.Optimizer",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.Optimizer",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.Optimizer).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.OptimizerSupportLevel",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.OptimizerSupportLevel",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.OptimizerSupportLevel).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.POWELL",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.POWELL",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.POWELL).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.P_BFGS",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.P_BFGS",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.P_BFGS).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QAOA",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.QAOA",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.QAOA).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.SLSQP",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.SLSQP",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.SLSQP).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.SNOBFIT",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.SNOBFIT",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.SNOBFIT).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.SPSA",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.SPSA",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.SPSA).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers.TNC",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers.TNC",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.optimizers.TNC).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.components.uncertainty_models.UniformDistribution",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_finance.circuit.library.UniformDistribution",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_finance.circuit.library.UniformDistribution).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQC",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning.algorithms.VQC",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_machine_learning.algorithms.VQC).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQE",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.VQE",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.VQE).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQEResult",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.VQEResult",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit_algorithms.VQEResult).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.operators.Z2Symmetries",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.Z2Symmetries",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit.quantum_info.Z2Symmetries).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.operators.commutator",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.commutator",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit.quantum_info.commutator).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.utils.random_hermitian",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.random_hermitian",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit.quantum_info.random_hermitian).",
+    "source": "sandbox-verified"
+  },
+  {
+    "symbol": "qiskit.aqua.utils.random_unitary",
+    "status": "moved",
+    "since_version": null,
+    "removed_in": "1.0",
+    "replacement": "qiskit.quantum_info.random_unitary",
+    "note": "Auto-harvested via cross-package name-match; sandbox-verified moved (use qiskit.quantum_info.random_unitary).",
+    "source": "sandbox-verified"
   }
 ]

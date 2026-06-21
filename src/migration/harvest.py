@@ -649,9 +649,12 @@ def main(argv: list[str] | None = None) -> int:
         except Exception:
             saved = []
     skip = {r["symbol"] for r in saved}
+    # Count only the candidates already covered — `skip` is the whole --out file (which can be
+    # far larger than this run's candidate set when appending to an existing catalog).
+    already = sum(1 for c in candidates if c["symbol"] in skip)
     print(
-        f"Mined {len(candidates)} candidates; {len(skip)} already done, "
-        f"{len(candidates) - len(skip)} to verify.",
+        f"Mined {len(candidates)} candidates; {already} already done, "
+        f"{len(candidates) - already} to verify.",
         flush=True,
     )
 
