@@ -95,6 +95,24 @@ def test_pre_046_application_modules_map_to_standalone_packages(tmp_path):
         assert rec is not None and rec.replacement == replacement
 
 
+def test_aqua_algorithms_map_to_specific_ecosystem_classes(tmp_path):
+    # The Aqua algorithms split across DIFFERENT ecosystem packages, so generic
+    # `qiskit.aqua -> qiskit_algorithms` isn't enough — QSVM went to qiskit-machine-learning.
+    # Granular records must give the concrete destination so the LLM doesn't leave it dangling.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+
+    expected = {
+        "qiskit.aqua.algorithms.QSVM": "qiskit_machine_learning.algorithms.QSVC",
+        "qiskit.aqua.algorithms.VQC": "qiskit_machine_learning.algorithms.VQC",
+        "qiskit.aqua.algorithms.VQE": "qiskit_algorithms.VQE",
+    }
+    for symbol, replacement in expected.items():
+        rec = next((r for r in store.lookup({symbol}) if r.symbol == symbol), None)
+        assert rec is not None and rec.replacement == replacement
+
+
 def test_legacy_ibmq_provider_maps_to_runtime(tmp_path):
     # The old IBMQ provider module (distinct from top-level qiskit.IBMQ) maps to qiskit-ibm-runtime.
     store = DeprecationStore(str(tmp_path / "dep.db"))

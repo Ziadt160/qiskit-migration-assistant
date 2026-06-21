@@ -358,5 +358,50 @@
     "replacement": "qiskit_ibm_runtime",
     "note": "The legacy IBMQ provider (qiskit.providers.ibmq / qiskit-ibmq-provider) was removed. Use the standalone qiskit-ibm-runtime package: from qiskit_ibm_runtime import QiskitRuntimeService; service = QiskitRuntimeService(); backend = service.backend(...).",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QSVM",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning.algorithms.QSVC",
+    "note": "QSVM (kernel-based quantum SVM) moved out of the removed qiskit.aqua into qiskit-machine-learning and was renamed: classifier -> QSVC, regressor -> QSVR, Pegasos variant -> PegasosQSVC. Import as `from qiskit_machine_learning.algorithms import QSVC` (it now takes a quantum kernel, e.g. FidelityQuantumKernel).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQC",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_machine_learning.algorithms.VQC",
+    "note": "VQC (variational quantum classifier) moved to qiskit-machine-learning: `from qiskit_machine_learning.algorithms import VQC` (use VQR for regression). The constructor signature changed (feature_map/ansatz/optimizer).",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.VQE",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.VQE",
+    "note": "VQE moved to qiskit-algorithms (primitives-based): `from qiskit_algorithms import VQE`; it now takes an Estimator primitive instead of a QuantumInstance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.algorithms.QAOA",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.QAOA",
+    "note": "QAOA moved to qiskit-algorithms (primitives-based): `from qiskit_algorithms import QAOA`; takes a Sampler primitive instead of a QuantumInstance.",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.aqua.components.optimizers",
+    "status": "moved",
+    "since_version": "0.20",
+    "removed_in": "1.0",
+    "replacement": "qiskit_algorithms.optimizers",
+    "note": "Aqua optimizers moved to qiskit-algorithms: `from qiskit_algorithms.optimizers import COBYLA, SPSA, ...`.",
+    "source": "curated-seed"
   }
 ]
