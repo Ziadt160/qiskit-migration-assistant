@@ -276,7 +276,7 @@ def mine_candidates(
 
 # Introspector run INSIDE the old-package container: walk `root`, emit {name: most-public path}
 # for every public class/function DEFINED in `root` (re-exports collapse to the shortest path).
-_ENUM_SRC = '''\
+_ENUM_SRC = """\
 import importlib, inspect, json, pkgutil, sys, warnings
 warnings.simplefilter("ignore")
 root = sys.argv[1]
@@ -303,7 +303,7 @@ for m in mods:
         if name not in out or len(access) < len(out[name]):
             out[name] = access
 print("ENUMJSON" + json.dumps(out))
-'''
+"""
 
 # Where to look for a moved symbol's new home, in priority order (first match wins).
 DEFAULT_ECOSYSTEM_NAMESPACES = [
@@ -356,7 +356,14 @@ def enumerate_old_symbols(
     with tempfile.TemporaryDirectory() as tmp:
         Path(tmp, "_enum.py").write_text(_ENUM_SRC, encoding="utf-8")
         cmd = [
-            "docker", "run", "--rm", "-v", f"{tmp}:/work:ro", image, "sh", "-c",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{tmp}:/work:ro",
+            image,
+            "sh",
+            "-c",
             f"pip install --no-cache-dir -q {install_spec} >/dev/null 2>&1 "
             f"&& python /work/_enum.py {root_module}",
         ]
@@ -396,9 +403,7 @@ def build_ecosystem_index(namespaces: list[str], sandbox: Sandbox) -> dict[str, 
         "print('ECOIDX' + json.dumps(idx))\n"
     )
     report = sandbox.run(script, warnings_as_errors=False, max_capture=2_000_000)
-    line = next(
-        (ln for ln in (report.stdout or "").splitlines() if ln.startswith("ECOIDX")), None
-    )
+    line = next((ln for ln in (report.stdout or "").splitlines() if ln.startswith("ECOIDX")), None)
     if not line:
         raise RuntimeError(
             f"ecosystem index failed: {(report.stderr or report.stdout or '')[-500:]}"
@@ -554,9 +559,7 @@ def harvest_cross_package(
     )
     if limit:
         candidates = candidates[:limit]
-    return harvest_candidates(
-        candidates, sandbox, store=store, method="cross-package name-match"
-    )
+    return harvest_candidates(candidates, sandbox, store=store, method="cross-package name-match")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -620,9 +623,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         old_symbols = enumerate_old_symbols(args.old, args.old_root, image=args.enum_image)
         eco_index = build_ecosystem_index(namespaces, sandbox)
-        candidates = cross_package_candidates(
-            old_symbols, eco_index, removed_in=args.removed_in
-        )
+        candidates = cross_package_candidates(old_symbols, eco_index, removed_in=args.removed_in)
         if args.limit:
             candidates = candidates[: args.limit]
         method = "cross-package name-match"
@@ -634,9 +635,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         if not args.new:
             parser.error("--new is required for --mode griffe")
-        candidates = mine_candidates(
-            args.old, args.new, cache_dir=args.cache_dir, limit=args.limit
-        )
+        candidates = mine_candidates(args.old, args.new, cache_dir=args.cache_dir, limit=args.limit)
         method = "Griffe API-diff"
 
     # Resume: load any partial --out file and skip symbols already verified, so a re-run
