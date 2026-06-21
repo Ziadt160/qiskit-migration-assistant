@@ -95,6 +95,16 @@ def test_pre_046_application_modules_map_to_standalone_packages(tmp_path):
         assert rec is not None and rec.replacement == replacement
 
 
+def test_legacy_ibmq_provider_maps_to_runtime(tmp_path):
+    # The old IBMQ provider module (distinct from top-level qiskit.IBMQ) maps to qiskit-ibm-runtime.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+    results = store.lookup({"qiskit.providers.ibmq"})
+    rec = next((r for r in results if r.symbol == "qiskit.providers.ibmq"), None)
+    assert rec is not None and rec.replacement == "qiskit_ibm_runtime"
+
+
 def test_ml_segment_does_not_false_positive(tmp_path):
     # A bare `.ml()` call must NOT be flagged as the removed `qiskit.ml` module.
     store = DeprecationStore(str(tmp_path / "dep.db"))

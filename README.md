@@ -345,16 +345,48 @@ A single-VM Docker Compose topology. Images pin Python 3.12 (heavy compiled whee
 
 ---
 
+## Recently shipped
+
+- **Behavioral-equivalence checking** — runs the original on old Qiskit vs the migrated code
+  on the target and compares each circuit by **statevector fidelity `|⟨ψ_old|ψ_new⟩|`**
+  (`equivalence.py`); proves a migration preserves *behavior*, not just that it imports.
+- **Runtime-grounded detection** — the target sandbox's own `DeprecationWarning`s are parsed
+  and fed back into the repair loop as authoritative deprecations, so coverage stays current
+  with the target version, not a frozen snapshot (`runtime_deprecations.py`, `--runtime-deps`).
+- **Provenance-aware matching** — deprecations match by fully-qualified *import identity*, not
+  bare name, eliminating the `qiskit_aer.Aer` vs removed `qiskit.Aer` false-positive class.
+- **OpenAI-compatible generator** — one driver for Groq / OpenRouter / Cerebras / GitHub Models
+  (several with a free tier); `LLM_PROVIDER=openai`. Use a powerful frontier model for free.
+- **Version coverage 0.2x → 2.1** — Aqua-era application modules (chemistry/finance/optimization/
+  ml) through the newest 2.1 ansatz-function deprecations (TwoLocal → `n_local`, …).
+- **No-op safety** — already-modern code is returned verbatim; the LLM never rewrites what the
+  authoritative table says isn't deprecated.
+
+## Honest limits
+
+- **Retrieval needs Pinecone** today (a fresh clone runs `--offline` deprecation analysis with
+  zero accounts; full migration retrieval needs a Pinecone key). A local vector backend is the
+  top roadmap item.
+- **The generator is the ceiling on the hardest rewrites.** A 7B local model handles mechanical
+  changes but not deep restructures (e.g. opflow → primitives); a frontier model (free via
+  GitHub Models / OpenRouter) does — and the sandbox + validators catch any miss rather than
+  returning broken-looking-clean code.
+- **Executable validation needs Docker**; behavioral-equivalence currently runs the *old* side
+  on a 0.46 image, so genuinely pre-0.46 code reports "undetermined" rather than a false pass.
+
 ## Roadmap
 
-- Grow the golden eval set beyond 8 cases (the biggest quality-signal win).
-- Behavioral-equivalence checking (run old-on-old vs new-on-new, compare outputs).
-- Jupyter notebook (`.ipynb`) support.
-- Source-version auto-detection from the code.
-- Multi-hop version planning (0.x → 2.x across several breaking releases).
+- **Local vector store** (FAISS / sqlite-vec) + a shippable prebuilt index — make retrieval
+  runnable with no external accounts.
+- Extend deprecation coverage at the tails: a `2.0→2.2` runtime-warning harvest, the deep
+  pre-0.46 surface, and tiered legacy sandbox images for source-side equivalence beyond 0.46.
+- Jupyter notebook (`.ipynb`) support; source-version auto-detection.
 - Generalize the engine to a second library (e.g. Pandas 1→2).
 - Adoption channels: VS Code extension, pre-commit hook, GitHub Action.
-- An OpenAI-compatible generator (Groq / OpenRouter free cloud LLMs).
+
+> **On multiple versions:** the design is **direct-to-latest with version-keyed knowledge**
+> (the approach Amazon Q's Java upgrader uses), not multi-hop LLM rewriting — and the runtime
+> oracle keeps target-side coverage complete by construction.
 
 ---
 

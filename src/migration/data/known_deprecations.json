@@ -349,5 +349,14 @@
     "replacement": "qiskit_machine_learning",
     "note": "The qiskit.ml application module became the standalone qiskit-machine-learning package. Install qiskit-machine-learning and import from qiskit_machine_learning.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.providers.ibmq",
+    "status": "removed",
+    "since_version": "0.40",
+    "removed_in": "1.0",
+    "replacement": "qiskit_ibm_runtime",
+    "note": "The legacy IBMQ provider (qiskit.providers.ibmq / qiskit-ibmq-provider) was removed. Use the standalone qiskit-ibm-runtime package: from qiskit_ibm_runtime import QiskitRuntimeService; service = QiskitRuntimeService(); backend = service.backend(...).",
+    "source": "curated-seed"
   }
 ]
