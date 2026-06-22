@@ -14,6 +14,7 @@ without either installed.
 
 from __future__ import annotations
 
+import re
 from typing import Protocol
 
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -115,6 +116,36 @@ def _strip_code_fences(code: str) -> str:
 def _postprocess(out: LLMTransformOutput) -> LLMTransformOutput:
     out.ported_code = _strip_code_fences(out.ported_code)
     return out
+
+
+# Text-mode (no structured output): for chat/open models that can't do tool/JSON output
+# (e.g. DeepSeek-V3 on some endpoints). Ask for the migrated file in a single code block,
+# extract it, and let the validators + sandbox verify it — at the cost of the per-change rationale.
+_TEXT_INSTRUCTION = (
+    "\n\nOUTPUT FORMAT: Respond with ONLY the complete migrated Python file inside a single "
+    "```python code block. No explanation, no prose, and no JSON outside the code block."
+)
+_CODE_BLOCK_RE = re.compile(r"```(?:python)?\s*\n(.*?)```", re.DOTALL)
+
+
+def _extract_code_block(text: str) -> str:
+    """Pull the migrated file out of a free-text/markdown response (first fenced block)."""
+    match = _CODE_BLOCK_RE.search(text or "")
+    if match:
+        return match.group(1).rstrip()
+    return _strip_code_fences(text or "").strip()
+
+
+def _text_to_output(text: str) -> LLMTransformOutput:
+    """Wrap a free-text model response as an LLMTransformOutput (text mode)."""
+    return LLMTransformOutput(
+        ported_code=_extract_code_block(text),
+        changes=[],
+        warnings=[
+            "Generated in text mode: no structured per-change rationale "
+            "(the configured model does not support tool/JSON-schema output)."
+        ],
+    )
 
 
 def _prompt_vars(
@@ -293,10 +324,20 @@ class OpenAICompatibleGenerator:
             base_url=settings.openai_base_url or None,
             temperature=0,
         )
-        prompt = ChatPromptTemplate.from_messages([("system", _SYSTEM), ("human", _HUMAN)])
-        self.chain = prompt | llm.with_structured_output(
-            LLMTransformOutput, method=settings.openai_structured_method
-        )
+        self._text_mode = settings.openai_structured_method == "text"
+        if self._text_mode:
+            # Plain text completion + code-block extraction, for models without tool/JSON output.
+            from langchain_core.output_parsers import StrOutputParser
+
+            prompt = ChatPromptTemplate.from_messages(
+                [("system", _SYSTEM + _TEXT_INSTRUCTION), ("human", _HUMAN)]
+            )
+            self.chain = prompt | llm | StrOutputParser()
+        else:
+            prompt = ChatPromptTemplate.from_messages([("system", _SYSTEM), ("human", _HUMAN)])
+            self.chain = prompt | llm.with_structured_output(
+                LLMTransformOutput, method=settings.openai_structured_method
+            )
 
     @retry(
         retry=retry_if_exception(_is_transient_llm_error),
@@ -315,7 +356,10 @@ class OpenAICompatibleGenerator:
         variables = _prompt_vars(
             code, deprecations, context_chunks, source_version, feedback, self.target_version
         )
-        return _postprocess(self.chain.invoke(variables))
+        result = self.chain.invoke(variables)
+        if self._text_mode:
+            return _text_to_output(result)
+        return _postprocess(result)
 
 
 def get_generator() -> Generator:

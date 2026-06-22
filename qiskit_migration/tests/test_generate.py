@@ -30,6 +30,31 @@ def test_format_deprecations_lists_symbol_and_replacement():
     assert "backend.run" in out
 
 
+def test_text_mode_extracts_code_block_from_prose():
+    # Chat/open models (e.g. DeepSeek) reply with prose + a fenced block; text mode recovers
+    # just the migrated file.
+    resp = (
+        "Sure! Here's the migrated file:\n\n"
+        "```python\nfrom qiskit_aer import AerSimulator\nsim = AerSimulator()\n```\n"
+        "Let me know if you need more."
+    )
+    assert (
+        gen._extract_code_block(resp) == "from qiskit_aer import AerSimulator\nsim = AerSimulator()"
+    )
+
+
+def test_text_mode_handles_plain_fence_and_no_fence():
+    assert gen._extract_code_block("```\nx = 1\n```") == "x = 1"
+    assert gen._extract_code_block("x = 1\n") == "x = 1"  # no fence -> text as-is
+
+
+def test_text_to_output_wraps_code_and_flags_mode():
+    out = gen._text_to_output("```python\nprint('hi')\n```")
+    assert out.ported_code == "print('hi')"
+    assert out.changes == []
+    assert out.warnings and "text mode" in out.warnings[0].lower()
+
+
 def test_format_deprecations_empty():
     assert "none" in _format_deprecations([]).lower()
 

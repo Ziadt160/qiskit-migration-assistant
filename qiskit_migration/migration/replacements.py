@@ -162,7 +162,7 @@ def enrich_records(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Attach + verify replacements via the flake8 map.")
     parser.add_argument(
-        "--in", dest="path", default="src/migration/data/harvested_deprecations.json"
+        "--in", dest="path", default="qiskit_migration/migration/data/harvested_deprecations.json"
     )
     parser.add_argument("--sandbox-backend", default="docker", help="local | docker")
     parser.add_argument("--docs-dir", default="documentation/docs", help="Qiskit docs checkout")

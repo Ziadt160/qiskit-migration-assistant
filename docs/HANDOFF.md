@@ -177,7 +177,7 @@ python -m qiskit_migration.eval.run_eval --seed-only --equivalence              
 - **Provider client libs are declared deps now.** `anthropic` + `langchain-ollama` were used but undeclared in `pyproject.toml` (only `langchain-google-genai`/Gemini was) → CI failed because `AnthropicGenerator.__init__` does `import anthropic` before the key check, raising `ModuleNotFoundError` instead of the expected `ValueError`. Fixed by declaring both as core deps. Lesson: any new provider's SDK must be a declared dep.
 - **`ollama serve` exits 1 if Ollama already runs as a Windows service** (port 11434 in use) — that's fine, it's already serving. Check with `curl http://localhost:11434/api/tags`.
 - **GitHub Actions logs need auth (`gh` not installed here).** To debug a CI failure, reproduce it locally in the CI image: `docker run --rm -v "C:\Evoth Labs\RAGProject:/app" -w /app python:3.12-slim sh -c "pip install -e '.[dev]' -q; pytest -q"`.
-- **Web-UI diff is side-by-side** (ORIGINAL | MIGRATED grid, client-side LCS in `app.js`); palette softened (muted lavender/mint). Brand assets are Canva PNGs post-processed with Pillow (transparent export is plan-gated). `_WEB_DIR` in `api/main.py` resolves to `qiskit_migration/app/web`; Docker `COPY src ./src` bundles it.
+- **Web-UI diff is side-by-side** (ORIGINAL | MIGRATED grid, client-side LCS in `app.js`); palette softened (muted lavender/mint). Brand assets are Canva PNGs post-processed with Pillow (transparent export is plan-gated). `_WEB_DIR` in `api/main.py` resolves to `qiskit_migration/app/web`; Docker `COPY qiskit_migration ./qiskit_migration` bundles it.
 
 ---
 
