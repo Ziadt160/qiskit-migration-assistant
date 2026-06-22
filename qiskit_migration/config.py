@@ -56,7 +56,9 @@ class Settings(BaseSettings):
         None  # e.g. https://api.groq.com/openai/v1, https://openrouter.ai/api/v1
     )
     openai_model: str = "llama-3.3-70b-versatile"  # provider-specific id; override per provider
-    openai_structured_method: str = "function_calling"  # function_calling | json_schema | json_mode
+    # function_calling | json_schema | json_mode | text  (text = no structured output: extract a
+    # code block from a plain chat reply, for models without tool/JSON support, e.g. DeepSeek-V3)
+    openai_structured_method: str = "function_calling"
     # Cohere embedding throughput controls — raise the throttle for rate-limited trial keys.
     embed_throttle_s: float = 0.0
     embed_retry_cooldown_s: int = 65

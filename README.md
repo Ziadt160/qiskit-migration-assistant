@@ -91,7 +91,9 @@ instead of returning broken-looking-clean code — which is the entire point. Re
 `python -m qiskit_migration.eval.run_eval --e2e --sandbox-backend docker`.
 
 > The generator is swappable via one env var (`LLM_PROVIDER`) — local Ollama, Anthropic,
-> Gemini, or any OpenAI-compatible endpoint — so you pick the quality/cost trade-off.
+> Gemini, or any OpenAI-compatible endpoint (Groq / OpenRouter / GitHub Models …). Models
+> without tool/JSON output (e.g. DeepSeek-V3) work too via `OPENAI_STRUCTURED_METHOD=text`,
+> which extracts the migrated file from a plain chat reply and still verifies it in the sandbox.
 
 ---
 
