@@ -10,6 +10,12 @@
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+![Qiskit Migration Assistant migrating legacy Qiskit 0.x and 1.x code to 2.x across five cases — detect deprecations, transform, run in a sandbox, verify](docs/demo.gif)
+
+> _Five real cases on loop — `qiskit.opflow` VQE and `qiskit.aqua` QSVM (0.x → 2.x), plus V1→V2
+> primitives, fake-provider/BackendV2, and ansatz classes→functions (1.x → 2.x). Each is detected,
+> rewritten, run in a sandbox, and verified._
+
 ![Qiskit Migration Assistant migrating execute + Aer code to Qiskit 2.x — migrated code, per-change rationale, and a sandbox verdict](docs/screenshots/01-execute-aer.png)
 
 > _Old code in, runnable Qiskit 2.x out — every change cited, validation **PASS**, and
