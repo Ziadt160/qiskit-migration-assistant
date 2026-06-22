@@ -58,8 +58,8 @@ makes the benchmark verifiable:
 
 | Metric (14 cases) | Score | Reproduce with |
 |---|---|---|
-| Deprecation-detection recall | **1.00** (17/17) | `python -m src.eval.run_eval --seed-only` |
-| Reference cleanliness | **1.00** (14/14) | `python -m src.eval.run_eval --seed-only` |
+| Deprecation-detection recall | **1.00** (17/17) | `python -m qiskit_migration.eval.run_eval --seed-only` |
+| Reference cleanliness | **1.00** (14/14) | `python -m qiskit_migration.eval.run_eval --seed-only` |
 | Reference code executes on real Qiskit 2.2.3 | **13/14** | `... --executable --sandbox-backend docker` |
 
 > The single non-executing case (`ibmq-removed`) needs the `qiskit-ibm-runtime` package +
@@ -69,14 +69,14 @@ makes the benchmark verifiable:
 The **end-to-end** tier (live retrieval + LLM generation) is model-dependent. On the local
 `qwen2.5-coder:7b` (embeddings on a single RTX 4060 Ti) it migrated the set at 100% static
 validation and 100% changes-applied, with executable parity to the references. Reproduce it
-for your own provider with `python -m src.eval.run_eval --e2e`.
+for your own provider with `python -m qiskit_migration.eval.run_eval --e2e`.
 
 ---
 
 ## Example
 
 ```bash
-python -m src.migration.cli --code "qc.bind_parameters({theta: 0.5})"
+python -m qiskit_migration.migration.cli --code "qc.bind_parameters({theta: 0.5})"
 ```
 
 The assistant detects that `QuantumCircuit.bind_parameters` was removed, retrieves the
@@ -94,8 +94,8 @@ coverage: 1/1 handled · validation: PASS
 Point it at a whole project and it shows a unified diff per changed file (dry-run by default):
 
 ```bash
-python -m src.migration.cli --path ./my_project --recursive            # preview diffs
-python -m src.migration.cli --path ./my_project --recursive --apply    # write changes
+python -m qiskit_migration.migration.cli --path ./my_project --recursive            # preview diffs
+python -m qiskit_migration.migration.cli --path ./my_project --recursive --apply    # write changes
 ```
 
 It cheaply pre-filters offline to only the files that actually use a deprecated API before
@@ -124,7 +124,7 @@ old code
 | LLM (generation) | local **Ollama** `qwen2.5-coder` | `LLM_PROVIDER` (`ollama`, `anthropic`, `gemini`) |
 | Sandbox | none (set to `docker` to verify) | `SANDBOX_BACKEND` (`none`, `local`, `docker`) |
 
-Deprecation knowledge = a curated, authoritative seed (`src/migration/data/known_deprecations.json`)
+Deprecation knowledge = a curated, authoritative seed (`qiskit_migration/migration/data/known_deprecations.json`)
 plus a heuristic release-note parser, compiled into a SQLite table. The seed outranks parsed
 records, so curated facts win over noisier parses.
 
@@ -195,15 +195,15 @@ make ingest         # embed + upsert the corpus into Pinecone (one-time; re-run 
 
 ```bash
 # Offline: just report deprecations in a snippet (no network, no LLM)
-python -m src.migration.cli --offline --file old_code.py
+python -m qiskit_migration.migration.cli --offline --file old_code.py
 
 # Full migration of one snippet or file (needs Pinecone + an LLM provider)
-python -m src.migration.cli --file old_code.py
-python -m src.migration.cli --code "from qiskit import execute" --json
+python -m qiskit_migration.migration.cli --file old_code.py
+python -m qiskit_migration.migration.cli --code "from qiskit import execute" --json
 
 # Migrate a file or whole directory, diff per changed file
-python -m src.migration.cli --path ./my_project --recursive           # dry-run
-python -m src.migration.cli --path ./my_project --recursive --apply   # write changes
+python -m qiskit_migration.migration.cli --path ./my_project --recursive           # dry-run
+python -m qiskit_migration.migration.cli --path ./my_project --recursive --apply   # write changes
 ```
 
 ### REST API
@@ -237,7 +237,7 @@ make serve                  # uvicorn on :8000
 # open http://localhost:8000/ui/   (the root path / redirects here)
 ```
 
-A custom front end (no framework, no CDN — served straight from `src/app/web/`): hero,
+A custom front end (no framework, no CDN — served straight from `qiskit_migration/app/web/`): hero,
 example snippets, a code editor, live status pill, an animated progress stepper, and a
 results view with metrics, syntax-highlighted **Ported code** and a **side-by-side diff**,
 a per-change rationale with citations, detected deprecations, and the sandbox verdict.
@@ -246,14 +246,14 @@ Soft, modern dark theme; brand assets generated with Canva.
 A **Streamlit** client is also available as an alternative:
 
 ```bash
-streamlit run src/app/chatbot.py        # set MIGRATION_API_URL if the API isn't on :8000
+streamlit run qiskit_migration/app/chatbot.py        # set MIGRATION_API_URL if the API isn't on :8000
 ```
 
 ---
 
 ## Configuration
 
-All settings are env-driven (`src/config.py`, loaded from `.env`). The most important ones:
+All settings are env-driven (`qiskit_migration/config.py`, loaded from `.env`). The most important ones:
 
 | Variable | Purpose | Notes |
 |---|---|---|
@@ -279,10 +279,10 @@ only for low-volume query-time reranking.
 ## Evaluation
 
 ```bash
-python -m src.eval.run_eval --seed-only      # offline gate (detection recall + ref cleanliness) — CI gate
-python -m src.eval.run_eval --retrieval      # + live retrieval recall
-python -m src.eval.run_eval --e2e            # + full pipeline through the LLM
-python -m src.eval.run_eval --executable --sandbox-backend docker   # run gold refs vs real Qiskit
+python -m qiskit_migration.eval.run_eval --seed-only      # offline gate (detection recall + ref cleanliness) — CI gate
+python -m qiskit_migration.eval.run_eval --retrieval      # + live retrieval recall
+python -m qiskit_migration.eval.run_eval --e2e            # + full pipeline through the LLM
+python -m qiskit_migration.eval.run_eval --executable --sandbox-backend docker   # run gold refs vs real Qiskit
 ```
 
 The offline gate (`make eval`) fails the build if deprecation-detection recall drops below
@@ -293,7 +293,7 @@ The offline gate (`make eval`) fails the build if deprecation-detection recall d
 ## Project structure
 
 ```
-src/
+qiskit_migration/
 ├── config.py              # all settings (get_settings), .env-driven
 ├── embeddings.py          # pluggable embedders + rerankers
 ├── ingestion/             # load docs → version-aware metadata → chunk → embed → upsert
@@ -331,7 +331,7 @@ Dockerfile.{api,worker,ui,sandbox}, docker-compose.yml, Makefile
 make test        # pytest -q — hermetic unit suite, all external services mocked
 make lint        # ruff check + format --check (CI gates on these)
 make fmt         # ruff format + autofix
-make typecheck   # mypy src
+make typecheck   # mypy qiskit_migration
 make eval        # offline eval gate
 ```
 

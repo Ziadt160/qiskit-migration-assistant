@@ -17,6 +17,6 @@ Qiskit 2.x APIs.
 ## Run the assistant on one
 
 ```bash
-python -m src.migration.cli --code "$(cat examples/01_opflow_vqe/legacy.py)" --offline
+python -m qiskit_migration.migration.cli --code "$(cat examples/01_opflow_vqe/legacy.py)" --offline
 # or the full pipeline (needs retrieval keys + Docker sandbox) — see docs/HANDOFF.md
 ```

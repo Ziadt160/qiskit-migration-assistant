@@ -1,0 +1,3 @@
+# Installs the package (code + bundled deprecation data) straight from GitHub, plus its deps.
+# Offline detection needs no qiskit install and no API keys.
+git+https://github.com/Ziadt160/qiskit-migration-assistant.git@main

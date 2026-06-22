@@ -16,8 +16,8 @@ record. Here's how to help.
 
 Deprecation knowledge lives in two tiers:
 
-- `src/migration/data/known_deprecations.json` — the **curated seed** (hand-verified, high-value).
-- `src/migration/data/harvested_deprecations.json` — **auto-harvested, sandbox-verified** records.
+- `qiskit_migration/migration/data/known_deprecations.json` — the **curated seed** (hand-verified, high-value).
+- `qiskit_migration/migration/data/harvested_deprecations.json` — **auto-harvested, sandbox-verified** records.
 
 A record looks like:
 
@@ -45,19 +45,19 @@ Two routes:
 - **Manual (curated seed):** add the record to `known_deprecations.json`, then prove it:
   ```bash
   pip install -e ".[harvest]"
-  python -m src.migration.harvest --help   # see verify/promote flags
+  python -m qiskit_migration.migration.harvest --help   # see verify/promote flags
   ```
 - **Automated (harvester):** let the engine mine + verify it for you.
   - Same-package removals across versions (Griffe diff):
     ```bash
-    python -m src.migration.harvest --old qiskit-terra==0.46.3 --new qiskit==2.0.2 \
-        --sandbox-backend docker --out src/migration/data/harvested_deprecations.json
+    python -m qiskit_migration.migration.harvest --old qiskit-terra==0.46.3 --new qiskit==2.0.2 \
+        --sandbox-backend docker --out qiskit_migration/migration/data/harvested_deprecations.json
     ```
   - Cross-package moves (a legacy package → the ecosystem), e.g. `qiskit.aqua`:
     ```bash
-    python -m src.migration.harvest --mode cross-package \
+    python -m qiskit_migration.migration.harvest --mode cross-package \
         --old qiskit-aqua==0.9.0 --old-root qiskit.aqua --sandbox-backend docker \
-        --out src/migration/data/harvested_deprecations.json
+        --out qiskit_migration/migration/data/harvested_deprecations.json
     ```
   Both only promote records the sandbox confirms (old symbol absent on the target; replacement imports clean).
 
@@ -76,7 +76,7 @@ All of these must be green (CI checks them):
 ruff check .           # lint
 ruff format --check .  # formatting (separate from lint — both must pass)
 pytest                 # unit tests
-python -m src.eval.run_eval --db build/eval.db   # eval gate: detection recall + reference cleanliness
+python -m qiskit_migration.eval.run_eval --db build/eval.db   # eval gate: detection recall + reference cleanliness
 ```
 
 The **eval gate** is the project's contract — a change may not lower detection recall or reference

@@ -19,22 +19,22 @@ fmt:
 	ruff check --fix .
 
 typecheck:
-	mypy src
+	mypy qiskit_migration
 
 eval:
-	python -m src.eval.run_eval --seed-only --min-recall 0.9
+	python -m qiskit_migration.eval.run_eval --seed-only --min-recall 0.9
 
 build-store:
-	python -m src.migration.cli --build-store
+	python -m qiskit_migration.migration.cli --build-store
 
 ingest:
 	python -m scripts.run_ingestion
 
 serve:
-	uvicorn src.api.main:app --reload --port 8000
+	uvicorn qiskit_migration.api.main:app --reload --port 8000
 
 worker:
-	python -m src.worker.run
+	python -m qiskit_migration.worker.run
 
 up:
 	docker compose up -d --build
@@ -51,4 +51,4 @@ sandbox-legacy-image:
 
 # Behavioral-equivalence eval over the golden set (needs both sandbox images built).
 equivalence: sandbox-image sandbox-legacy-image
-	python -m src.eval.run_eval --equivalence
+	python -m qiskit_migration.eval.run_eval --equivalence

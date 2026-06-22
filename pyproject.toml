@@ -58,7 +58,7 @@ local = ["sentence-transformers>=3.0", "torch>=2.2"]
 postgres = ["psycopg[binary]>=3.1"]
 # RAG evaluation harness (heavy; only needed to run `make eval`).
 eval = ["ragas>=0.1.7", "datasets>=2.19"]
-# Knowledge harvester (src/migration/harvest.py + replacements.py): Griffe API-diff between
+# Knowledge harvester (qiskit_migration/migration/harvest.py + replacements.py): Griffe API-diff between
 # Qiskit versions, plus the community flake8 migration map for replacement hypotheses.
 harvest = ["griffe>=1.0", "flake8-qiskit-migration>=0.4"]
 # Local dev tooling.
@@ -75,17 +75,25 @@ Homepage = "https://github.com/Ziadt160/qiskit-migration-assistant"
 Repository = "https://github.com/Ziadt160/qiskit-migration-assistant"
 Issues = "https://github.com/Ziadt160/qiskit-migration-assistant/issues"
 
+[project.scripts]
+qiskit-migrate = "qiskit_migration.migration.cli:main"
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["src*"]
+include = ["qiskit_migration*"]
+
+[tool.setuptools.package-data]
+# Ship the deprecation knowledge (curated seed + harvested tier) inside the wheel so an
+# installed copy (PyPI / pip-from-git / the hosted demo) can load it without the repo tree.
+"qiskit_migration.migration" = ["data/*.json"]
 
 [tool.pytest.ini_options]
-# Repo root on the path so `import src.*` works; only collect the real unit tests.
+# Repo root on the path so `import qiskit_migration.*` works; only collect the real unit tests.
 pythonpath = ["."]
-testpaths = ["src/tests"]
+testpaths = ["qiskit_migration/tests"]
 addopts = "-q"
 
 [tool.ruff]

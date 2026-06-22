@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import argparse
 
-from src.config import get_settings
-from src.ingestion.chunking import QiskitMarkdownChunker
-from src.ingestion.indexer import QiskitIndexer
-from src.ingestion.loader import QiskitMarkdownLoader
-from src.migration.retrieval import MIGRATION_DOC_TYPES
+from qiskit_migration.config import get_settings
+from qiskit_migration.ingestion.chunking import QiskitMarkdownChunker
+from qiskit_migration.ingestion.indexer import QiskitIndexer
+from qiskit_migration.ingestion.loader import QiskitMarkdownLoader
+from qiskit_migration.migration.retrieval import MIGRATION_DOC_TYPES
 
 
 def run_full_pipeline(
