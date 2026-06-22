@@ -1,4 +1,4 @@
-"""Hosted demo (Hugging Face Spaces / Streamlit Community Cloud).
+"""Hosted demo (Hugging Face Spaces — Gradio SDK).
 
 Paste legacy Qiskit (0.x / 1.x) code and see every deprecated/removed symbol the assistant
 detects, with its verified Qiskit 2.x replacement. Runs the *offline detection* pipeline
@@ -6,7 +6,7 @@ in-process — zero API keys, zero cost, no Docker. Full LLM migration + Docker-
 validation + behavioral-equivalence run locally (see the repo README / docs/HANDOFF.md).
 """
 
-import streamlit as st
+import gradio as gr
 
 from qiskit_migration.migration.deprecations import (
     DeprecationStore,
@@ -43,12 +43,9 @@ EXAMPLES = {
     ),
 }
 
-st.set_page_config(page_title="Qiskit Migration Assistant", page_icon="⚛️", layout="wide")
 
-
-@st.cache_resource
-def get_store() -> DeprecationStore:
-    # Build from the curated seed + sandbox-verified harvested tier (no docs corpus needed).
+def _build_store() -> DeprecationStore:
+    # Curated seed + sandbox-verified harvested tier (no docs corpus / keys needed).
     store = DeprecationStore("demo.db")
     store.create()
     store.upsert_many(load_seed_records())
@@ -56,48 +53,52 @@ def get_store() -> DeprecationStore:
     return store
 
 
-store = get_store()
+STORE = _build_store()
 
-st.title("⚛️ Qiskit Migration Assistant")
-st.caption(
-    "Paste legacy Qiskit (0.x / 1.x) code — the assistant detects what's deprecated or removed "
-    "and shows the verified Qiskit 2.x replacement, grounded in a sandbox-verified table."
-)
 
-left, right = st.columns(2)
-with left:
-    choice = st.selectbox("Load an example", ["(your own code)", *EXAMPLES])
-    default = EXAMPLES.get(choice, next(iter(EXAMPLES.values())))
-    code = st.text_area("Legacy Qiskit code", value=default, height=340)
-    analyze = st.button("Analyze", type="primary")
+def analyze(code: str) -> str:
+    if not code or not code.strip():
+        return "Paste some code or pick an example, then click **Analyze**."
+    try:
+        _symbols, deps = find_deprecations(code, STORE)
+    except InputValidationError as exc:
+        return f"⚠️ Not valid Python: {exc}"
+    if not deps:
+        return "✅ No known deprecations found against the current knowledge base."
+    out = [f"### {len(deps)} deprecation(s) detected"]
+    for d in deps:
+        repl = d.replacement or "— removed; no drop-in replacement"
+        meta = f"deprecated {d.since_version or '?'}, removed {d.removed_in or '?'} · source: {d.source}"
+        block = f"**`{d.symbol}`** · _{d.status}_\n\n→ **`{repl}`**\n\n_{meta}_"
+        if d.note:
+            block += f"\n\n{d.note}"
+        out.append(block)
+    return "\n\n---\n\n".join(out)
 
-with right:
-    if analyze and code.strip():
-        try:
-            _symbols, deps = find_deprecations(code, store)
-        except InputValidationError as exc:
-            st.error(f"Not valid Python: {exc}")
-        else:
-            if not deps:
-                st.success("No known deprecations found against the current knowledge base.")
-            else:
-                st.subheader(f"{len(deps)} deprecation(s) detected")
-                for d in deps:
-                    repl = d.replacement or "— removed; no drop-in replacement"
-                    with st.container(border=True):
-                        st.markdown(f"**`{d.symbol}`** · _{d.status}_")
-                        st.markdown(f"→ **`{repl}`**")
-                        st.caption(
-                            f"deprecated {d.since_version or '?'}, removed {d.removed_in or '?'} "
-                            f"· source: {d.source}"
-                        )
-                        if d.note:
-                            st.caption(d.note)
-    else:
-        st.info("Load an example or paste code, then click **Analyze**.")
 
-st.divider()
-st.caption(
-    "Hosted demo = offline detection only (zero keys, zero cost). Full LLM migration, "
-    "Docker-sandbox execution, and behavioral-equivalence checks run locally — see the repo."
-)
+with gr.Blocks(title="Qiskit Migration Assistant") as demo:
+    gr.Markdown(
+        "# ⚛️ Qiskit Migration Assistant\n"
+        "Paste legacy Qiskit (0.x / 1.x) code — see what's deprecated or removed and the verified "
+        "Qiskit 2.x replacement, grounded in a sandbox-verified table."
+    )
+    with gr.Row():
+        with gr.Column():
+            code = gr.Code(
+                value=next(iter(EXAMPLES.values())),
+                language="python",
+                label="Legacy Qiskit code",
+                lines=16,
+            )
+            gr.Examples(examples=[[v] for v in EXAMPLES.values()], inputs=code, label="Examples")
+            btn = gr.Button("Analyze", variant="primary")
+        with gr.Column():
+            output = gr.Markdown()
+    btn.click(analyze, inputs=code, outputs=output)
+    gr.Markdown(
+        "_Hosted demo = offline detection only (zero keys, zero cost). Full LLM migration, "
+        "Docker-sandbox execution, and behavioral-equivalence checks run locally — see the repo._"
+    )
+
+if __name__ == "__main__":
+    demo.launch()
