@@ -9,12 +9,16 @@
 [![Qiskit target 2.x](https://img.shields.io/badge/qiskit%20target-2.x-6929c4.svg)](https://www.ibm.com/quantum/qiskit)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Live demo on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97-Live%20demo-yellow.svg)](https://huggingface.co/spaces/quZiad/qiskit-migration-assistant)
 
 ![Qiskit Migration Assistant migrating legacy Qiskit 0.x and 1.x code to 2.x across five cases — detect deprecations, transform, run in a sandbox, verify](docs/demo.gif)
 
 > _Five real cases on loop — `qiskit.opflow` VQE and `qiskit.aqua` QSVM (0.x → 2.x), plus V1→V2
 > primitives, fake-provider/BackendV2, and ansatz classes→functions (1.x → 2.x). Each is detected,
 > rewritten, run in a sandbox, and verified._
+>
+> **▶ [Try the live demo](https://huggingface.co/spaces/quZiad/qiskit-migration-assistant)** —
+> paste old Qiskit code and see what's deprecated plus its verified 2.x replacement (free, no keys).
 
 ![Qiskit Migration Assistant migrating execute + Aer code to Qiskit 2.x — migrated code, per-change rationale, and a sandbox verdict](docs/screenshots/01-execute-aer.png)
 
