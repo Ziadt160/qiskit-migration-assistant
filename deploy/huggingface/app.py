@@ -68,7 +68,10 @@ def analyze(code: str) -> str:
     out = [f"### {len(deps)} deprecation(s) detected"]
     for d in deps:
         repl = d.replacement or "— removed; no drop-in replacement"
-        meta = f"deprecated {d.since_version or '?'}, removed {d.removed_in or '?'} · source: {d.source}"
+        meta = (
+            f"deprecated {d.since_version or '?'}, removed {d.removed_in or '?'} "
+            f"· source: {d.source}"
+        )
         block = f"**`{d.symbol}`** · _{d.status}_\n\n→ **`{repl}`**\n\n_{meta}_"
         if d.note:
             block += f"\n\n{d.note}"
