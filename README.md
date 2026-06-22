@@ -73,10 +73,26 @@ makes the benchmark verifiable:
 > is air-gapped by design, so the self-repair loop retries then reports the limitation rather
 > than faking success.
 
-The **end-to-end** tier (live retrieval + LLM generation) is model-dependent. On the local
-`qwen2.5-coder:7b` (embeddings on a single RTX 4060 Ti) it migrated the set at 100% static
-validation and 100% changes-applied, with executable parity to the references. Reproduce it
-for your own provider with `python -m qiskit_migration.eval.run_eval --e2e`.
+### End-to-end with a free frontier model
+
+The end-to-end tier runs the *whole* pipeline — retrieval → LLM rewrite → sandbox → self-repair —
+on the same 29-case golden set. Measured with **gpt-4.1 (free, via GitHub Models)**:
+
+| End-to-end metric (29 cases) | Result |
+|---|---|
+| Migrated cleanly (passed static validation) | **22 / 29** |
+| Migrated **and executed clean on real Qiskit 2.x** | **20 / 29** |
+| Execution rate among the cases it migrated | **91%** (20 / 22) |
+
+The deep restructures pass — the full **`qiskit.opflow` VQE → primitives**, the **`qiskit.aqua`
+VQE → ecosystem** move, and **`execute()` → primitives**. Where the model slips (a few removed
+gate-methods such as `mct` / `fredkin`), the validators and sandbox **flag it as a failure**
+instead of returning broken-looking-clean code — which is the entire point. Reproduce with
+`python -m qiskit_migration.eval.run_eval --e2e --sandbox-backend docker`.
+
+> The generator is swappable: a local `qwen2.5-coder:7b` handles the mechanical cases for free
+> with no API at all; a frontier model (gpt-4.1, free via GitHub Models) clears the deep
+> restructures — you choose the quality/cost trade-off via one env var.
 
 ---
 
