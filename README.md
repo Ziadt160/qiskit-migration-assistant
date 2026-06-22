@@ -73,10 +73,10 @@ makes the benchmark verifiable:
 > is air-gapped by design, so the self-repair loop retries then reports the limitation rather
 > than faking success.
 
-### End-to-end with a free frontier model
+### End-to-end with the LLM
 
 The end-to-end tier runs the *whole* pipeline — retrieval → LLM rewrite → sandbox → self-repair —
-on the same 29-case golden set. Measured with **gpt-4.1 (free, via GitHub Models)**:
+on the same 29-case golden set. With **gpt-4.1**:
 
 | End-to-end metric (29 cases) | Result |
 |---|---|
@@ -90,9 +90,8 @@ gate-methods such as `mct` / `fredkin`), the validators and sandbox **flag it as
 instead of returning broken-looking-clean code — which is the entire point. Reproduce with
 `python -m qiskit_migration.eval.run_eval --e2e --sandbox-backend docker`.
 
-> The generator is swappable: a local `qwen2.5-coder:7b` handles the mechanical cases for free
-> with no API at all; a frontier model (gpt-4.1, free via GitHub Models) clears the deep
-> restructures — you choose the quality/cost trade-off via one env var.
+> The generator is swappable via one env var (`LLM_PROVIDER`) — local Ollama, Anthropic,
+> Gemini, or any OpenAI-compatible endpoint — so you pick the quality/cost trade-off.
 
 ---
 
