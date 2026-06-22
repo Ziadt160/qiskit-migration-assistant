@@ -4,6 +4,20 @@ version = "0.1.0"
 description = "Production-grade RAG assistant that ports Qiskit code from older versions to the latest (2.x)."
 requires-python = ">=3.11"
 readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Ziad" }]
+keywords = ["qiskit", "migration", "quantum-computing", "rag", "code-migration", "deprecation"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Code Generators",
+]
 dependencies = [
   # --- config & utils ---
   "pydantic>=2.7",
@@ -56,6 +70,11 @@ dev = [
   "mypy>=1.10",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Ziadt160/qiskit-migration-assistant"
+Repository = "https://github.com/Ziadt160/qiskit-migration-assistant"
+Issues = "https://github.com/Ziadt160/qiskit-migration-assistant/issues"
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -72,6 +91,8 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Illustrative migration snippets (intentionally partial; not standalone-runnable).
+extend-exclude = ["examples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
