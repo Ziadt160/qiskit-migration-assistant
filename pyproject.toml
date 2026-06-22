@@ -82,6 +82,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["src*"]
 
+[tool.setuptools.package-data]
+# Ship the deprecation knowledge (curated seed + harvested tier) inside the wheel so an
+# installed copy (PyPI / pip-from-git / the hosted demo) can load it without the repo tree.
+"src.migration" = ["data/*.json"]
+
 [tool.pytest.ini_options]
 # Repo root on the path so `import src.*` works; only collect the real unit tests.
 pythonpath = ["."]
