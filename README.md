@@ -56,19 +56,22 @@ hosted providers (Anthropic, Gemini, Cohere) if you'd rather not run models your
 
 ### Results
 
-The golden set has **14 cases** spanning every curated deprecation. The headline metrics
+The golden set has **29 cases** spanning every curated deprecation. The headline metrics
 are **deterministic and reproducible by anyone** — no API keys, no model — which is what
 makes the benchmark verifiable:
 
-| Metric (14 cases) | Score | Reproduce with |
+| Metric (29 cases) | Score | Reproduce with |
 |---|---|---|
-| Deprecation-detection recall | **1.00** (17/17) | `python -m qiskit_migration.eval.run_eval --seed-only` |
-| Reference cleanliness | **1.00** (14/14) | `python -m qiskit_migration.eval.run_eval --seed-only` |
-| Reference code executes on real Qiskit 2.2.3 | **13/14** | `... --executable --sandbox-backend docker` |
+| Deprecation-detection recall | **1.00** (32/32) | `python -m qiskit_migration.eval.run_eval --seed-only` |
+| Reference cleanliness | **1.00** (29/29) | `python -m qiskit_migration.eval.run_eval --seed-only` |
+| Reference code executes on real Qiskit 2.2.3 | **25/29** | `... --executable --sandbox-backend docker` |
 
-> The single non-executing case (`ibmq-removed`) needs the `qiskit-ibm-runtime` package +
-> an IBM Quantum account + network; the sandbox is air-gapped by design, so the self-repair
-> loop correctly retries then reports the limitation rather than faking success.
+> The 4 non-executing cases are **environmental, not migration defects**: `ibmq-removed`
+> (needs `qiskit-ibm-runtime` + an IBM Quantum account + network), `ignis-tomography` (the
+> removed `qiskit-ignis` package), `tools-visualization` (matplotlib, omitted from the
+> air-gapped sandbox), and `tools-parallel-map` (a `parallel_map` pickling quirk). The sandbox
+> is air-gapped by design, so the self-repair loop retries then reports the limitation rather
+> than faking success.
 
 The **end-to-end** tier (live retrieval + LLM generation) is model-dependent. On the local
 `qwen2.5-coder:7b` (embeddings on a single RTX 4060 Ti) it migrated the set at 100% static
