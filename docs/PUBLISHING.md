@@ -1,25 +1,18 @@
 # Publishing to PyPI
 
-The package metadata is PyPI-ready (MIT license, classifiers, URLs, bundled `data/*.json`).
-Two things to decide before a real release.
+The package metadata is PyPI-ready: MIT license, classifiers, URLs, bundled `data/*.json`,
+the **`qiskit_migration`** import package, and a `qiskit-migrate` CLI entry point.
 
-## ⚠️ Prerequisite: the import package name
+## Package layout
 
-The distribution currently exposes a **top-level `src` package** (`[tool.setuptools.packages.find]
-include = ["src*"]`, and all imports are `import src.migration...`). Publishing as-is would put a
-generic `src` package on every user's machine — a namespace collision waiting to happen.
+```toml
+[project.scripts]
+qiskit-migrate = "qiskit_migration.migration.cli:main"
+```
 
-Before a clean PyPI release, rename the import package to something unique, e.g. `qiskit_migration`:
-- move/rename so the package imports as `qiskit_migration.*` (or remap with
-  `[tool.setuptools.package-dir]`), and update imports + `package-data` + test paths accordingly;
-- add a CLI entry point:
-  ```toml
-  [project.scripts]
-  qiskit-migrate = "qiskit_migration.cli:main"
-  ```
-
-Until that rename, prefer **install-from-GitHub** (`pip install git+https://github.com/Ziadt160/qiskit-migration-assistant.git`),
-which is what the hosted demo uses — it works without claiming the `src` name on PyPI.
+After `pip install`, users get a clean `qiskit_migration` package
+(e.g. `import qiskit_migration.migration.transform`) and a `qiskit-migrate` command. The PyPI
+distribution name is `qiskit-migration-assistant`.
 
 ## Build & check
 

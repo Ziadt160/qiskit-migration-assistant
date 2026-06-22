@@ -8,13 +8,13 @@ validation + behavioral-equivalence run locally (see the repo README / docs/HAND
 
 import streamlit as st
 
-from src.migration.deprecations import (
+from qiskit_migration.migration.deprecations import (
     DeprecationStore,
     load_harvested_records,
     load_seed_records,
 )
-from src.migration.transform import find_deprecations
-from src.migration.validate_input import InputValidationError
+from qiskit_migration.migration.transform import find_deprecations
+from qiskit_migration.migration.validate_input import InputValidationError
 
 EXAMPLES = {
     "opflow VQE (0.x → 2.x)": (

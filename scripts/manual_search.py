@@ -7,7 +7,7 @@ Not a unit test — it hits external services.
 
 from __future__ import annotations
 
-from src.retrieval.search import QiskitRetriever
+from qiskit_migration.retrieval.search import QiskitRetriever
 
 
 def main() -> None:

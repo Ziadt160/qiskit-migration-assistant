@@ -41,7 +41,7 @@ old code ──▶ AST symbol extraction (symbols.py)
 - **Vector store:** managed **Pinecone** (index `qiskit-documentation`, dim 1024, cosine) — **12,163 vectors** ingested (current_api + release_notes + migration_guides + guides).
 - **Rerank:** Cohere (query-time, low volume) or no-op.
 - **LLM:** pluggable via `LLM_PROVIDER` — `ollama` (local/free, default in practice), `anthropic` (Claude), `gemini`, `openai` (any OpenAI-compatible endpoint: Groq | OpenRouter | Cerebras | GitHub Models, several free).
-- **Deprecation knowledge:** curated seed (`src/migration/data/known_deprecations.json`) + heuristic release-note parser → SQLite table (`app.db`).
+- **Deprecation knowledge:** curated seed (`qiskit_migration/migration/data/known_deprecations.json`) + heuristic release-note parser → SQLite table (`app.db`).
 - **Serving:** FastAPI (`/migrate`, `/jobs/{id}`, `/healthz`, `/readyz`, `/metrics`) + RQ worker + Streamlit UI.
 
 ---
@@ -85,11 +85,11 @@ Start-Process ollama -ArgumentList 'serve' -WindowStyle Hidden
 
 # 2. API in eager mode (runs migrations inline; no Redis/worker needed) + UI, detached
 $env:LLM_PROVIDER='ollama'; $env:QUEUE_EAGER='true'; $env:MIGRATION_API_URL='http://localhost:8000'
-Start-Process python -ArgumentList '-m','uvicorn','src.api.main:app','--host','127.0.0.1','--port','8000' -WindowStyle Hidden -RedirectStandardOutput build\api.out.log -RedirectStandardError build\api.err.log
-Start-Process python -ArgumentList '-m','streamlit','run','src/app/chatbot.py','--server.port','8501','--server.address','localhost','--server.headless','true' -WindowStyle Hidden -RedirectStandardOutput build\ui.out.log -RedirectStandardError build\ui.err.log
+Start-Process python -ArgumentList '-m','uvicorn','qiskit_migration.api.main:app','--host','127.0.0.1','--port','8000' -WindowStyle Hidden -RedirectStandardOutput build\api.out.log -RedirectStandardError build\api.err.log
+Start-Process python -ArgumentList '-m','streamlit','run','qiskit_migration/app/chatbot.py','--server.port','8501','--server.address','localhost','--server.headless','true' -WindowStyle Hidden -RedirectStandardOutput build\ui.out.log -RedirectStandardError build\ui.err.log
 ```
 Then open the UI. **Two front ends, both talking to the same API:**
-- **Bundled web app (primary):** the API serves it at **http://localhost:8000/ui/** (root `/` redirects there). No extra process — it's static files in `src/app/web/` mounted by `create_app()` via `StaticFiles`. Custom HTML/CSS/JS (no framework/CDN); brand assets (`assets/{logo,mark,favicon,hero}.png`) generated with Canva. So the Streamlit `Start-Process` line above is optional now.
+- **Bundled web app (primary):** the API serves it at **http://localhost:8000/ui/** (root `/` redirects there). No extra process — it's static files in `qiskit_migration/app/web/` mounted by `create_app()` via `StaticFiles`. Custom HTML/CSS/JS (no framework/CDN); brand assets (`assets/{logo,mark,favicon,hero}.png`) generated with Canva. So the Streamlit `Start-Process` line above is optional now.
 - **Streamlit (alternative):** **http://localhost:8501**.
 
 First request is ~30–40 s (model load), then ~15–30 s.
@@ -98,11 +98,11 @@ First request is ~30–40 s (model load), then ~15–30 s.
 ```powershell
 docker compose up -d redis            # publishes Redis on host :6380
 $env:LLM_PROVIDER='ollama'; $env:REDIS_URL='redis://localhost:6380/0'
-Start-Process python -ArgumentList '-m','src.worker.run' -WindowStyle Hidden    # RQ SimpleWorker (Windows: no os.fork)
+Start-Process python -ArgumentList '-m','qiskit_migration.worker.run' -WindowStyle Hidden    # RQ SimpleWorker (Windows: no os.fork)
 # ...then start the API WITHOUT QUEUE_EAGER, same REDIS_URL.
 ```
 
-**Stop everything:** kill the processes on ports 8000/8501 and the `src.worker.run` python process (see `Start-Process`/`Stop-Process` in `docs`), and `docker compose down` if you started compose.
+**Stop everything:** kill the processes on ports 8000/8501 and the `qiskit_migration.worker.run` python process (see `Start-Process`/`Stop-Process` in `docs`), and `docker compose down` if you started compose.
 
 ---
 
@@ -112,38 +112,38 @@ All from the repo root. Prefix with `LLM_PROVIDER=ollama` (bash) / set `$env:LLM
 
 ```bash
 # Build the deprecation knowledge base from the docs corpus (offline, ~seconds)
-python -m src.migration.cli --build-store
+python -m qiskit_migration.migration.cli --build-store
 
 # Offline: just report deprecations in a snippet (NO network, NO LLM)
-python -m src.migration.cli --offline --file old.py
+python -m qiskit_migration.migration.cli --offline --file old.py
 
 # Runtime-true deprecations: run the code on the legacy 0.46 image, report the warnings it
 # actually triggers + Qiskit's own replacement hints (needs Docker + the legacy image)
-python -m src.migration.cli --runtime-deps --file old.py
+python -m qiskit_migration.migration.cli --runtime-deps --file old.py
 
 # Migrate one snippet (full pipeline)
-python -m src.migration.cli --file old.py
-python -m src.migration.cli --code "from qiskit import execute" --json
+python -m qiskit_migration.migration.cli --file old.py
+python -m qiskit_migration.migration.cli --code "from qiskit import execute" --json
 
 # Migrate a FILE or DIRECTORY with per-file diffs (dry-run by default)
-python -m src.migration.cli --path ./my_project --recursive
-python -m src.migration.cli --path ./my_project --recursive --apply   # write changes to disk
+python -m qiskit_migration.migration.cli --path ./my_project --recursive
+python -m qiskit_migration.migration.cli --path ./my_project --recursive --apply   # write changes to disk
 
 # Re-index the corpus into Pinecone (only when switching embedding models; wipes index first)
 python -m scripts.run_ingestion                    # migration-relevant doc types only
 python -m scripts.run_ingestion --all              # entire corpus (large/expensive)
 
 # Evaluation
-python -m src.eval.run_eval --seed-only                                  # offline gate (CI)
-python -m src.eval.run_eval --seed-only --adversarial                    # + held-out coverage-gap probe (non-gating)
-python -m src.eval.run_eval --retrieval                                  # + live retrieval recall
-LLM_PROVIDER=ollama python -m src.eval.run_eval --e2e                     # + full pipeline
-python -m src.eval.run_eval --executable --sandbox-backend docker        # run gold refs vs qiskit
-LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m src.eval.run_eval --e2e   # execute generated code
+python -m qiskit_migration.eval.run_eval --seed-only                                  # offline gate (CI)
+python -m qiskit_migration.eval.run_eval --seed-only --adversarial                    # + held-out coverage-gap probe (non-gating)
+python -m qiskit_migration.eval.run_eval --retrieval                                  # + live retrieval recall
+LLM_PROVIDER=ollama python -m qiskit_migration.eval.run_eval --e2e                     # + full pipeline
+python -m qiskit_migration.eval.run_eval --executable --sandbox-backend docker        # run gold refs vs qiskit
+LLM_PROVIDER=ollama SANDBOX_BACKEND=docker python -m qiskit_migration.eval.run_eval --e2e   # execute generated code
 
 # Behavioral equivalence (old-on-old vs new-on-new) over the golden set — needs BOTH images:
 make sandbox-image sandbox-legacy-image                                   # build qiskit 2.x + 0.46.3 images
-python -m src.eval.run_eval --seed-only --equivalence                     # statevector-fidelity check (non-gating)
+python -m qiskit_migration.eval.run_eval --seed-only --equivalence                     # statevector-fidelity check (non-gating)
 ```
 
 `--path` only runs the LLM on files that actually use a deprecated API (cheap offline pre-filter); it skips junk dirs (`.venv`, `__pycache__`, `build`, `dist`, ...). Dry-run prints diffs; `--apply` writes them.
@@ -168,7 +168,7 @@ python -m src.eval.run_eval --seed-only --equivalence                     # stat
 - **Switching embedding models requires re-ingestion.** Vectors from different models live in different spaces. `scripts/run_ingestion` **wipes the index first** (`indexer.clear()`). The index currently holds BGE vectors.
 - **Ollama server stops when idle** → "connection refused" on 11434. Restart with `ollama serve`.
 - **Docker Desktop shuts down** → Redis (`:6380`) + sandbox gone. Use **eager mode** for the API when Docker is down.
-- **RQ on Windows:** the default worker uses `os.fork` (absent on Windows) — `src/worker/run.py` uses `SimpleWorker`. Per-job timeout is `JOB_TIMEOUT_S=900` (model load + LLM can be slow).
+- **RQ on Windows:** the default worker uses `os.fork` (absent on Windows) — `qiskit_migration/worker/run.py` uses `SimpleWorker`. Per-job timeout is `JOB_TIMEOUT_S=900` (model load + LLM can be slow).
 - **SQLAlchemy `create_all()` doesn't migrate schema.** If you change the `jobs` table, drop it first (`DROP TABLE jobs` in `app.db`) — production needs Alembic.
 - **`.env` has spaces** around some `=` (`PINECONE_API_KEY =...`). pydantic-settings and Docker `env_file` both handle it fine.
 - **Heuristic release-note parser has residual false positives.** The curated seed (`known_deprecations.json`) is authoritative and outranks parsed records (`_score`). `_CURRENT_ALLOWLIST` in `deprecations.py` prevents flagging current core APIs (e.g. `transpile`).
@@ -177,7 +177,7 @@ python -m src.eval.run_eval --seed-only --equivalence                     # stat
 - **Provider client libs are declared deps now.** `anthropic` + `langchain-ollama` were used but undeclared in `pyproject.toml` (only `langchain-google-genai`/Gemini was) → CI failed because `AnthropicGenerator.__init__` does `import anthropic` before the key check, raising `ModuleNotFoundError` instead of the expected `ValueError`. Fixed by declaring both as core deps. Lesson: any new provider's SDK must be a declared dep.
 - **`ollama serve` exits 1 if Ollama already runs as a Windows service** (port 11434 in use) — that's fine, it's already serving. Check with `curl http://localhost:11434/api/tags`.
 - **GitHub Actions logs need auth (`gh` not installed here).** To debug a CI failure, reproduce it locally in the CI image: `docker run --rm -v "C:\Evoth Labs\RAGProject:/app" -w /app python:3.12-slim sh -c "pip install -e '.[dev]' -q; pytest -q"`.
-- **Web-UI diff is side-by-side** (ORIGINAL | MIGRATED grid, client-side LCS in `app.js`); palette softened (muted lavender/mint). Brand assets are Canva PNGs post-processed with Pillow (transparent export is plan-gated). `_WEB_DIR` in `api/main.py` resolves to `src/app/web`; Docker `COPY src ./src` bundles it.
+- **Web-UI diff is side-by-side** (ORIGINAL | MIGRATED grid, client-side LCS in `app.js`); palette softened (muted lavender/mint). Brand assets are Canva PNGs post-processed with Pillow (transparent export is plan-gated). `_WEB_DIR` in `api/main.py` resolves to `qiskit_migration/app/web`; Docker `COPY src ./src` bundles it.
 
 ---
 
@@ -185,31 +185,31 @@ python -m src.eval.run_eval --seed-only --equivalence                     # stat
 
 | Path | Role |
 |---|---|
-| `src/config.py` | All settings (`get_settings()`), `.env`-driven |
-| `src/embeddings.py` | Pluggable embedders (`LocalBGEEmbedder`/`CohereEmbedder`) + rerankers; `get_embedder()`/`get_reranker()` |
-| `src/ingestion/{loader,chunking,indexer}.py` | Load docs → version-aware metadata → chunk → embed → upsert to Pinecone |
-| `src/migration/symbols.py` | AST extraction of Qiskit API symbols from code |
-| `src/migration/deprecations.py` | Curated seed + release-note parser + SQLite store + lookup |
-| `src/migration/retrieval.py` | Hybrid retrieval (symbol/replacement-targeted + semantic) + rerank |
-| `src/generation/generate.py` | Gemini/Claude/Ollama generators + `get_generator()`; structured `LLMTransformOutput` |
-| `src/migration/validate_input.py` / `validate_output.py` | Input guardrails / static output validation |
-| `src/migration/sandbox.py` | `LocalSubprocessSandbox` + `DockerSandbox` (read-only, no-network, tmpfs); `run(code, warnings_as_errors=, max_capture=)` |
-| `src/migration/runtime_deprecations.py` | **Runtime deprecation capture** — automates Qiskit's "test on 0.46 first" advice: prepends a `showwarning` hook to the user code, runs it on the legacy image, and structures the `DeprecationWarning`s it *actually* triggers (symbol + Qiskit's own "Use X instead" hint + since/removed versions). Incremental emit (survives a timeout), partial-stdout-on-timeout. `capture_runtime_deprecations`, `legacy_sandbox`; CLI `--runtime-deps`. Augments the static table with runtime-true, usage-specific detection. **Closed loop (Root-2):** `deprecations_from_stderr` + `to_records` parse the target sandbox's own `DeprecationWarning` tracebacks into authoritative `DeprecationRecord`s that the repair loop feeds back as deps — so detection is version-complete by construction (catches e.g. the 2.1 `TwoLocal` deprecation the static harvest never saw), no re-harvest needed. |
-| `src/migration/equivalence.py` | **Behavioral-equivalence check** (old-on-old vs new-on-new): appends a statevector-fingerprint harness to old+new code, runs each on its Qiskit (legacy/target images), compares prepared states by **fidelity `|⟨ψ_old|ψ_new⟩|`** (global-phase- & float-noise-tolerant). `check_equivalence`, `build_harness`, `compare_fingerprints`, `default_equivalence_sandboxes`. Honest scope: only pure-state-from-\|0⟩ circuits compared; parametric/measured-mid/oversized → `skipped`; a side that won't run → `equivalent=None`. |
-| `src/migration/verify_record.py` | Execution-verification gate: probe a candidate `{symbol→replacement}` in the sandbox (old must be genuinely absent, replacement must import) → `RecordVerdict`; `verify_candidate`/`verify_candidates`. Trust gate for auto-harvested deprecation records (§12.1). |
-| `src/migration/harvest.py` | Autonomous harvester (Stage 1→4): Griffe API-diff → candidate removed symbols → sandbox-verify → promote as `source="sandbox-verified"`. `mine_candidates` (lazy Griffe, `[harvest]` extra), `harvest_candidates`, `harvest`, CLI `python -m src.migration.harvest`. |
-| `src/migration/replacements.py` | Attach replacements to detection-only harvested records from two sources — the `flake8-qiskit-migration` import map (member-wise rename) + the migration-guide markdown rename tables (`load_guide_replacements`, URL-derived symbols) — each sandbox-verified before attaching. `propose_replacement`/`propose_from_guide`/`enrich_records`; CLI `python -m src.migration.replacements --docs-dir ...`. |
-| `src/migration/transform.py` | Orchestrator: input→symbols→deps→retrieve→generate→validate→sandbox→self-repair; `find_deprecations()` (offline). Repair loop ingests the sandbox's runtime DeprecationWarnings (`_merge_runtime_deprecations`) as authoritative deps for the next attempt (Root-2 closed loop). |
-| `src/migration/report.py` | `iter_python_files`, `unified_diff`, `compute_coverage` |
-| `src/migration/cli.py` | CLI: `--offline`, `--file/--code`, `--path [--recursive --apply]`, `--build-store` |
-| `src/migration/models.py` | Pydantic models: `LLMTransformOutput`, `MigrationResult`, `CoverageSummary`, `ValidationReport`, `SandboxReport` |
-| `src/api/main.py` | FastAPI app (factory `create_app`) |
-| `src/worker/{run,tasks,queue}.py` | RQ worker + job runner (cached transformer) + queue (eager fallback) |
-| `src/db/db.py` | SQLAlchemy `JobStore` (SQLite/Postgres) |
-| `src/cache.py` / `src/observability.py` | Result cache (Redis/no-op) / Prometheus metrics |
-| `src/app/web/{index.html,styles.css,app.js,assets/}` | Bundled single-page web UI (served by the API at `/ui`); Canva-generated brand assets |
-| `src/app/chatbot.py` | Streamlit UI — alternative front end (Ported/Diff tabs, coverage row) |
-| `src/eval/{dataset/golden.py,metrics.py,run_eval.py}` | Golden set + metrics + gate runner |
+| `qiskit_migration/config.py` | All settings (`get_settings()`), `.env`-driven |
+| `qiskit_migration/embeddings.py` | Pluggable embedders (`LocalBGEEmbedder`/`CohereEmbedder`) + rerankers; `get_embedder()`/`get_reranker()` |
+| `qiskit_migration/ingestion/{loader,chunking,indexer}.py` | Load docs → version-aware metadata → chunk → embed → upsert to Pinecone |
+| `qiskit_migration/migration/symbols.py` | AST extraction of Qiskit API symbols from code |
+| `qiskit_migration/migration/deprecations.py` | Curated seed + release-note parser + SQLite store + lookup |
+| `qiskit_migration/migration/retrieval.py` | Hybrid retrieval (symbol/replacement-targeted + semantic) + rerank |
+| `qiskit_migration/generation/generate.py` | Gemini/Claude/Ollama generators + `get_generator()`; structured `LLMTransformOutput` |
+| `qiskit_migration/migration/validate_input.py` / `validate_output.py` | Input guardrails / static output validation |
+| `qiskit_migration/migration/sandbox.py` | `LocalSubprocessSandbox` + `DockerSandbox` (read-only, no-network, tmpfs); `run(code, warnings_as_errors=, max_capture=)` |
+| `qiskit_migration/migration/runtime_deprecations.py` | **Runtime deprecation capture** — automates Qiskit's "test on 0.46 first" advice: prepends a `showwarning` hook to the user code, runs it on the legacy image, and structures the `DeprecationWarning`s it *actually* triggers (symbol + Qiskit's own "Use X instead" hint + since/removed versions). Incremental emit (survives a timeout), partial-stdout-on-timeout. `capture_runtime_deprecations`, `legacy_sandbox`; CLI `--runtime-deps`. Augments the static table with runtime-true, usage-specific detection. **Closed loop (Root-2):** `deprecations_from_stderr` + `to_records` parse the target sandbox's own `DeprecationWarning` tracebacks into authoritative `DeprecationRecord`s that the repair loop feeds back as deps — so detection is version-complete by construction (catches e.g. the 2.1 `TwoLocal` deprecation the static harvest never saw), no re-harvest needed. |
+| `qiskit_migration/migration/equivalence.py` | **Behavioral-equivalence check** (old-on-old vs new-on-new): appends a statevector-fingerprint harness to old+new code, runs each on its Qiskit (legacy/target images), compares prepared states by **fidelity `|⟨ψ_old|ψ_new⟩|`** (global-phase- & float-noise-tolerant). `check_equivalence`, `build_harness`, `compare_fingerprints`, `default_equivalence_sandboxes`. Honest scope: only pure-state-from-\|0⟩ circuits compared; parametric/measured-mid/oversized → `skipped`; a side that won't run → `equivalent=None`. |
+| `qiskit_migration/migration/verify_record.py` | Execution-verification gate: probe a candidate `{symbol→replacement}` in the sandbox (old must be genuinely absent, replacement must import) → `RecordVerdict`; `verify_candidate`/`verify_candidates`. Trust gate for auto-harvested deprecation records (§12.1). |
+| `qiskit_migration/migration/harvest.py` | Autonomous harvester (Stage 1→4): Griffe API-diff → candidate removed symbols → sandbox-verify → promote as `source="sandbox-verified"`. `mine_candidates` (lazy Griffe, `[harvest]` extra), `harvest_candidates`, `harvest`, CLI `python -m qiskit_migration.migration.harvest`. |
+| `qiskit_migration/migration/replacements.py` | Attach replacements to detection-only harvested records from two sources — the `flake8-qiskit-migration` import map (member-wise rename) + the migration-guide markdown rename tables (`load_guide_replacements`, URL-derived symbols) — each sandbox-verified before attaching. `propose_replacement`/`propose_from_guide`/`enrich_records`; CLI `python -m qiskit_migration.migration.replacements --docs-dir ...`. |
+| `qiskit_migration/migration/transform.py` | Orchestrator: input→symbols→deps→retrieve→generate→validate→sandbox→self-repair; `find_deprecations()` (offline). Repair loop ingests the sandbox's runtime DeprecationWarnings (`_merge_runtime_deprecations`) as authoritative deps for the next attempt (Root-2 closed loop). |
+| `qiskit_migration/migration/report.py` | `iter_python_files`, `unified_diff`, `compute_coverage` |
+| `qiskit_migration/migration/cli.py` | CLI: `--offline`, `--file/--code`, `--path [--recursive --apply]`, `--build-store` |
+| `qiskit_migration/migration/models.py` | Pydantic models: `LLMTransformOutput`, `MigrationResult`, `CoverageSummary`, `ValidationReport`, `SandboxReport` |
+| `qiskit_migration/api/main.py` | FastAPI app (factory `create_app`) |
+| `qiskit_migration/worker/{run,tasks,queue}.py` | RQ worker + job runner (cached transformer) + queue (eager fallback) |
+| `qiskit_migration/db/db.py` | SQLAlchemy `JobStore` (SQLite/Postgres) |
+| `qiskit_migration/cache.py` / `qiskit_migration/observability.py` | Result cache (Redis/no-op) / Prometheus metrics |
+| `qiskit_migration/app/web/{index.html,styles.css,app.js,assets/}` | Bundled single-page web UI (served by the API at `/ui`); Canva-generated brand assets |
+| `qiskit_migration/app/chatbot.py` | Streamlit UI — alternative front end (Ported/Diff tabs, coverage row) |
+| `qiskit_migration/eval/{dataset/golden.py,metrics.py,run_eval.py}` | Golden set + metrics + gate runner |
 | `scripts/run_ingestion.py` / `scripts/manual_search.py` | Manual ingestion / retrieval smoke (live) |
 | `Dockerfile.{api,worker,ui,sandbox}` / `docker-compose.yml` / `Makefile` | Containers + compose + make targets (`make sandbox-image`, `sandbox-legacy-image`, `equivalence`) |
 | `Dockerfile.sandbox-legacy` | Old-Qiskit (0.46.3 + aer 0.13.3) image for the behavioral-equivalence check's "old-on-old" run |
@@ -222,7 +222,7 @@ python -m src.eval.run_eval --seed-only --equivalence                     # stat
 ```bash
 ruff check . && ruff format --check .     # lint + format (CI gates on these)
 pytest -q                                 # full unit suite (hermetic; externals mocked)
-python -m src.eval.run_eval --seed-only   # offline eval gate (detection recall + ref cleanliness)
+python -m qiskit_migration.eval.run_eval --seed-only   # offline eval gate (detection recall + ref cleanliness)
 ```
 CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eval gate → docker build.
 
@@ -235,37 +235,37 @@ CI (`.github/workflows/ci.yml`): ruff → mypy (non-blocking) → pytest → eva
 **Done this session (2026-06-09/10):**
 - **Open-sourced** — public on GitHub (`main`), MIT, CI **green** (test + docker-build).
 - **Golden eval expanded 8 → 14 cases** (covers every curated deprecation except `qiskit.pulse`); deterministic gate re-verified (detection 17/17, cleanliness 14/14, references 13/14 executable on Qiskit 2.2.3).
-- **New web UI** (`src/app/web/`, served by the API at `/ui`): hero, examples, progress stepper, metrics, **side-by-side diff**, cited changes, sandbox verdict; soft modern theme; Canva brand assets. Streamlit kept as the alternative.
+- **New web UI** (`qiskit_migration/app/web/`, served by the API at `/ui`): hero, examples, progress stepper, metrics, **side-by-side diff**, cited changes, sandbox verdict; soft modern theme; Canva brand assets. Streamlit kept as the alternative.
 - **Live full E2E verified through the browser** (Ollama + Pinecone + Docker sandbox): correct migration, validation PASS, sandbox `ok=True`.
 - **Fixed a real dependency bug** (`anthropic`/`langchain-ollama` undeclared) — found via CI, root-caused by reproducing CI in Docker.
 - **Code review done** → see **§12** for the prioritized roadmap.
 
 **Done this session (2026-06-10, cont.) — adversarial eval + first closed gap:**
-- **Held-out adversarial eval landed** (`src/eval/dataset/adversarial.py`, `run_eval --adversarial`, `src/tests/test_adversarial_eval.py`): a **non-gating** coverage-gap probe built from deprecations **deliberately absent from the seed**. An integrity test enforces the held-out invariant (fails if the seed ever covers a case → graduate it to golden).
+- **Held-out adversarial eval landed** (`qiskit_migration/eval/dataset/adversarial.py`, `run_eval --adversarial`, `qiskit_migration/tests/test_adversarial_eval.py`): a **non-gating** coverage-gap probe built from deprecations **deliberately absent from the seed**. An integrity test enforces the held-out invariant (fails if the seed ever covers a case → graduate it to golden).
 - **Ran the full loop once.** First measurement: seed detected **0/13** of the held-out cases (every category 0%) — concrete proof the seed was thin. Then **closed that gap**: curated 13 records into `known_deprecations.json` (**seed 15→28**), **graduated all 13 into the golden set** (**golden 14→27**), and re-verified the deterministic gate stays green (**detection 30/30, cleanliness 27/27**). One small code fix needed: the old `qiskit.tools.parallel_map` and modern `qiskit.utils.parallel_map` share a last segment → added `parallel_map` to `_GENERIC_SEGMENTS` so the modern path isn't false-flagged (old one still matches by full symbol).
 - **Pushed the frontier out:** replaced the adversarial set with **5 new corpus-verified held-out cases** (diagonal, squ, converters.ast_to_dag, transpiler.synthesis graysynth/cnot_synth) the now-bigger seed still misses → diagnostic reads **0/5**. The loop is repeatable.
 
 **Done this session (cont.) — automating seed growth (the "knowledge harvester"):**
 - **Researched the best way to auto-grow the trusted table** (deep-research pass, fact-checked). Verdict: a **mine → propose → verify → promote** pipeline. Stage 1 (mine "what broke"): **Griffe** static API-diff between two PyPI versions. Stage 2 (propose replacement): Qiskit's own `deprecate_arg(new_alias=…)`/`deprecate_func` decorators + the community **`flake8-qiskit-migration`** ruleset (QKT100-202, covers 0.x→1.0→2.0 import moves) + LLM extraction for prose. Stage 3 (verify): the existing Docker sandbox. Stage 4: promote to a tiered-trust table, measure with the adversarial eval. No official IBM auto-rewrite tool exists — building this is genuinely the move.
 - **Griffe spike — validated Stage 1 on real Qiskit.** Diffed `qiskit 0.46.3 → 2.0.2` statically (no install needed; public API is pure-Python so the Rust internals don't block it): **2,858 breaking changes, 2,521 object removals, ~17/18 recall** on our known deprecations (only `PauliTable` truly missed; `BasicAer` caught at module level). ~**69 top-level public removals** vs the 28 curated → the table covers **~1% of the real surface**, now mechanically quantified. Caveats found: Griffe under-reports top-level re-export aliases and over-reports "moved-but-still-importable" symbols — i.e. it's high-recall but **noisy**, which is exactly why Stage 3 is mandatory.
-- **Built Stage 3 — the execution-verification gate** (`src/migration/verify_record.py` + tests). `verify_candidate(symbol, replacement, sandbox)` probes any symbol form (module / module.member / bare `Class.method`) and returns a `RecordVerdict`. Hardened after the live run: gate on `old_absent` (a *genuine* ImportError/AttributeError — a sandbox timeout/outage is **inconclusive**, never promoted), and a bad replacement hypothesis no longer sinks a valid removal (the replacement is just dropped).
-- **Built + proved the whole harvester end-to-end (Stage 1→4)** (`src/migration/harvest.py` + `src/tests/test_harvest.py`; `griffe` added as the `[harvest]` extra, lazy-imported). `mine_candidates` (Griffe diff → public removed symbols + best-effort replacement from the old docstring) → `harvest_candidates` (sandbox-verify → promote as `source="sandbox-verified"`, a new tier between curated and parser in `_score`). **Live run, real Docker + Qiskit 2.x:** mined **2,509** public removed candidates from `0.46→2.0`; a 12-candidate batch verified **12/12 removed** — including `qasm`/`bind_parameters` (which it *rediscovered* from the seed — cross-validation).
+- **Built Stage 3 — the execution-verification gate** (`qiskit_migration/migration/verify_record.py` + tests). `verify_candidate(symbol, replacement, sandbox)` probes any symbol form (module / module.member / bare `Class.method`) and returns a `RecordVerdict`. Hardened after the live run: gate on `old_absent` (a *genuine* ImportError/AttributeError — a sandbox timeout/outage is **inconclusive**, never promoted), and a bad replacement hypothesis no longer sinks a valid removal (the replacement is just dropped).
+- **Built + proved the whole harvester end-to-end (Stage 1→4)** (`qiskit_migration/migration/harvest.py` + `qiskit_migration/tests/test_harvest.py`; `griffe` added as the `[harvest]` extra, lazy-imported). `mine_candidates` (Griffe diff → public removed symbols + best-effort replacement from the old docstring) → `harvest_candidates` (sandbox-verify → promote as `source="sandbox-verified"`, a new tier between curated and parser in `_score`). **Live run, real Docker + Qiskit 2.x:** mined **2,509** public removed candidates from `0.46→2.0`; a 12-candidate batch verified **12/12 removed** — including `qasm`/`bind_parameters` (which it *rediscovered* from the seed — cross-validation).
 - **Hardened the miner (3 refinements) → closes the full gap.** A first live run only closed 3/5 of the adversarial frontier, which surfaced: (1) **module expansion** — Griffe reports a removed *module* as one breakage, so expand it to its public members (catches `graysynth`/`cnot_synth` inside the removed `qiskit.transpiler.synthesis`); (2) **dedup by last segment** keeping the canonical shortest path — collapses inherited-method explosions (`diagonal`/`squ` × ~15 classes), cutting candidates **2,509 → 1,177**, detection-preserving; (3) **decorator-first replacements** (`new_alias`/`additional_msg`) over docstrings, with a stopword guard. **Re-run result: the harvester drives the adversarial frontier `0/5 → 5/5` end-to-end, zero curation.** Remaining weak spot: replacement extraction is still thin (decorators absent for many 0.46 symbols) — detection coverage grows regardless, and bad replacements are dropped by the verifier, so records stay clean.
-- **Ran the full harvest + auto-loaded it (durably).** Hardened the CLI first (a 1h batch run was killed and lost everything because it wrote only at the end) → **streaming writes + resume + progress logging** (`--out` JSON, crash-safe). Full run: **1,177 candidates → 1,153 sandbox-verified removals** (24 correctly rejected as still-importable), **1,132 new vs the 28-record seed (~40× coverage)**, 21 rediscovered. Persisted to `src/migration/data/harvested_deprecations.json`, loaded alongside the seed by `build_deprecation_store`/`_ensure_store`.
+- **Ran the full harvest + auto-loaded it (durably).** Hardened the CLI first (a 1h batch run was killed and lost everything because it wrote only at the end) → **streaming writes + resume + progress logging** (`--out` JSON, crash-safe). Full run: **1,177 candidates → 1,153 sandbox-verified removals** (24 correctly rejected as still-importable), **1,132 new vs the 28-record seed (~40× coverage)**, 21 rediscovered. Persisted to `qiskit_migration/migration/data/harvested_deprecations.json`, loaded alongside the seed by `build_deprecation_store`/`_ensure_store`.
 - **Precision catch + fix (the gate earned its keep).** Auto-trusting all 1,153 with last-segment matching **broke cleanliness 1.0 → 0.667**: harvested removals collide by *name* with current APIs (`qiskit.pulse.cx` vs live `QuantumCircuit.cx`, `qiskit.algorithms.VQE` vs `qiskit_algorithms.VQE`, …). Fix: the **`sandbox-verified` tier matches by FULL SYMBOL only**, never last-segment (`DeprecationStore.lookup`) — names aren't hand-vetted like the seed. **Validated: gate stays PASS (detection 30/30, cleanliness 1.000), adversarial diagnostic 0/5 → 3/5** (import-form removals auto-detected; the 2 method-form ones, `diagonal`/`squ`, correctly stay seed-growth candidates). **109 unit tests pass.** Replacements: **0/1,153** — extraction remains the one unsolved piece.
 
 **Done this session (2026-06-11) — behavioral-equivalence check (roadmap #4, the differentiator):**
-- **Built the standout correctness signal** (`src/migration/equivalence.py` + `src/tests/test_equivalence.py`, 17 hermetic tests). It answers the question the sandbox can't: not "does the ported code *run*?" but "does it still *do the same thing*?" Strategy = **old-on-old vs new-on-new**: a fingerprint harness (appended to the user code, using only APIs present in both 0.46 and 2.x) inspects the module namespace for every `QuantumCircuit`, strips final measurements, and emits the **statevector it prepares from \|0…0⟩** as JSON; the host matches circuits by variable name and compares each pair by **fidelity `|⟨ψ_old|ψ_new⟩|`**. Fidelity is the right metric — invariant to global phase (physically meaningless) and, unlike a hash, tolerant to the sub-ULP float noise two Qiskit versions produce, so equivalent states score 1.0 and a real divergence drops below threshold.
+- **Built the standout correctness signal** (`qiskit_migration/migration/equivalence.py` + `qiskit_migration/tests/test_equivalence.py`, 17 hermetic tests). It answers the question the sandbox can't: not "does the ported code *run*?" but "does it still *do the same thing*?" Strategy = **old-on-old vs new-on-new**: a fingerprint harness (appended to the user code, using only APIs present in both 0.46 and 2.x) inspects the module namespace for every `QuantumCircuit`, strips final measurements, and emits the **statevector it prepares from \|0…0⟩** as JSON; the host matches circuits by variable name and compares each pair by **fidelity `|⟨ψ_old|ψ_new⟩|`**. Fidelity is the right metric — invariant to global phase (physically meaningless) and, unlike a hash, tolerant to the sub-ULP float noise two Qiskit versions produce, so equivalent states score 1.0 and a real divergence drops below threshold.
 - **Honest scope, by design** (matches the verification-first ethos): only circuits reducing to a pure state from \|0⟩ are compared; **parametric / mid-circuit-measured / >`max_qubits`** circuits are reported `skipped:<reason>`; if either side fails to run or nothing lines up by name, the verdict is `equivalent=None` (undetermined) — **never a false "equivalent."**
 - **New legacy image** (`Dockerfile.sandbox-legacy`, Qiskit **0.46.3** + aer 0.13.3 on py3.11) so the *original* deprecated code actually runs for its "old" side. `DockerSandbox.run` gained two backward-compatible kwargs — `warnings_as_errors=False` (old code legitimately warns) and `max_capture` (a 12-qubit statevector blows past the 4 KB cap). Wired opt-in into the transformer (`EQUIVALENCE_ENABLED`, injected + best-effort so infra failure never sinks a migration) and into the eval (`run_eval --equivalence`, `evaluate_behavioral_equivalence`, non-gating; `make equivalence`).
 - **Proven on REAL Docker, cross-version (0.46.3 → 2.2.3):** `bind-parameters` → `bound` circuit **fidelity 1.0** (old `bind_parameters` ≡ new `assign_parameters`), parametric `qc` correctly skipped; `execute-aer-basic` → Bell `qc` **fidelity 1.0** (the `execute`→`backend.run(transpile(...))` rewrite preserves the prepared state), measurements auto-stripped. **133 unit tests pass; lint/format clean.**
 - **Full golden-set run (`run_eval --equivalence`, real Docker, 58 container runs):** **13/29 determinable, all 13 behaviorally equivalent at fidelity 1.0, ZERO divergent** (determinable pass-rate 1.000). The 16 "undetermined" are honest, in two buckets the check refuses to score: (a) the migration concerns a **non-circuit object** (opflow operators, optimizers, backends, VQE, QuantumInstance — nothing to fingerprint), or (b) the **original code won't run on the minimal 0.46.3 legacy image** (qiskit-aqua/ignis/ibmq are separate removed packages; `tools.visualization` needs matplotlib; `PauliTable` predates 0.46) → "could not fingerprint original" — never a false pass. The deterministic gate stays PASS alongside (detection 32/32, cleanliness 1.000).
 
 **Top next moves (prioritized — full rationale in §12):**
-1. **Refill the adversarial probe (it's at 0-gap) + extend replacement coverage.** The loop fully cycled: replacement extraction landed (`src/migration/replacements.py`, two sandbox-verified sources — flake8 import map → 88, migration-guide rename tables → 14; **0 → 102 replacements**), and the last 2 method-form frontier misses (`diagonal`/`squ`) were **graduated into the seed + golden** (golden 27→29, detection 32/32). The adversarial diagnostic now reads **3/3 (gap 0)** — the harvested tier covers the remaining frontier — so **refill `adversarial.py` with new held-out cases the harvest *doesn't* reach** to keep the probe measuring a real gap. Further replacement coverage: true vector-RAG over the guides for unstructured prose (same verify gate) — lower ROI, most remaining records have no documented replacement. *(Re-running the harvest is now crash-safe + resumable via `--out`.)*
+1. **Refill the adversarial probe (it's at 0-gap) + extend replacement coverage.** The loop fully cycled: replacement extraction landed (`qiskit_migration/migration/replacements.py`, two sandbox-verified sources — flake8 import map → 88, migration-guide rename tables → 14; **0 → 102 replacements**), and the last 2 method-form frontier misses (`diagonal`/`squ`) were **graduated into the seed + golden** (golden 27→29, detection 32/32). The adversarial diagnostic now reads **3/3 (gap 0)** — the harvested tier covers the remaining frontier — so **refill `adversarial.py` with new held-out cases the harvest *doesn't* reach** to keep the probe measuring a real gap. Further replacement coverage: true vector-RAG over the guides for unstructured prose (same verify gate) — lower ROI, most remaining records have no documented replacement. *(Re-running the harvest is now crash-safe + resumable via `--out`.)*
 2. **Local vector-store option + shippable index** — makes "fully local & free" literally true (today Pinecone is the one piece a fresh cloner can't run).
 3. **Sandbox container cleanup on timeout** — small fix; closes the only real operational hazard (orphaned containers).
-4. ~~**Behavioral-equivalence check** (old-on-old vs new-on-new)~~ — **DONE 2026-06-11** (`src/migration/equivalence.py`; statevector-fidelity, real-Docker cross-version proof at fidelity 1.0). Next increments if revisited: surface the verdict in the web UI + the live API response; broaden the fingerprint to **counts/probabilities for mid-circuit-measurement circuits** (currently `skipped`); auto-pick the legacy image from the detected `source_version` (today fixed at 0.46.3).
+4. ~~**Behavioral-equivalence check** (old-on-old vs new-on-new)~~ — **DONE 2026-06-11** (`qiskit_migration/migration/equivalence.py`; statevector-fidelity, real-Docker cross-version proof at fidelity 1.0). Next increments if revisited: surface the verdict in the web UI + the live API response; broaden the fingerprint to **counts/probabilities for mid-circuit-measurement circuits** (currently `skipped`); auto-pick the legacy image from the detected `source_version` (today fixed at 0.46.3).
 
 **Broader backlog (build on demand):** technical post; CONTRIBUTING + UI screenshot/GIF in README; notebook (`.ipynb`) support; source-version auto-detection; generalize to a 2nd library (Pandas 1→2); multi-hop version planning; VS Code extension / pre-commit / GitHub Action; Groq/OpenRouter via an OpenAI-compatible generator.
 
@@ -290,11 +290,11 @@ _Full read-through of the core on 2026-06-10. One-line thesis: **the system arou
 
 **Weaknesses, ranked by impact:**
 
-1. **The knowledge base is the moat, and it's thin — and the eval can't see that.** `known_deprecations.json` has ~15 records, and the 14 golden cases are derived from those same records → detection recall is **circular** (it measures "lookup works on APIs the seed knows," not real-world coverage). Qiskit 0.x→2.x has hundreds of breaking changes (`QuantumInstance`, `qiskit.test.mock`, `qc.cnot()`, old `transpile` kwargs, `qiskit.tools.visualization`, …). **Fix:** build a **held-out adversarial eval** from real old-Qiskit code (textbooks, pre-1.0 GitHub repos) you did *not* curate the seed from; measure the coverage gap; use it to drive seed growth. _This is the #1 priority._ **(Instrument built AND first gap closed — 2026-06-10. `src/eval/dataset/adversarial.py` + `run_eval --adversarial` (non-gating) + held-out invariant test. Baseline was 0/13; curated those 13 into the seed (15→28), graduated them into golden (14→27, gate still 1.00 at 30/30 detection + 27/27 cleanliness), and refilled the probe with 5 new held-out cases now reading 0/5. The loop — measure gap → curate → graduate → refill — is proven and repeatable; remaining work is just more turns of it.)** **Automating it (so curation isn't hand-work): researched + Stage 1 and Stage 3 built. Pipeline = mine→propose→verify→promote. Griffe API-diff (Stage 1) validated on real Qiskit — `0.46→2.0` surfaces ~2,500 removals at ~17/18 recall, quantifying the table at ~1% coverage; it's high-recall but noisy. The execution-verification gate (Stage 3, `src/migration/verify_record.py`) and the full autonomous driver (`src/migration/harvest.py`, Stage 1→4) are **built, tested, and proven end-to-end on real Docker + Qiskit 2.x** — a 12-candidate batch verified 12/12 removed, rediscovering seed entries. The "sandbox-verified" trust tier (`_score`) is wired. Remaining is operational, not architectural: run a full harvest pass to promote the ~2,500 verified removals (then watch the adversarial eval climb off ~1%), and strengthen the still-weak replacement extraction (decorator `additional_msg`/`new_alias`, the `flake8-qiskit-migration` map, or RAG) — detection coverage already grows without it.**
+1. **The knowledge base is the moat, and it's thin — and the eval can't see that.** `known_deprecations.json` has ~15 records, and the 14 golden cases are derived from those same records → detection recall is **circular** (it measures "lookup works on APIs the seed knows," not real-world coverage). Qiskit 0.x→2.x has hundreds of breaking changes (`QuantumInstance`, `qiskit.test.mock`, `qc.cnot()`, old `transpile` kwargs, `qiskit.tools.visualization`, …). **Fix:** build a **held-out adversarial eval** from real old-Qiskit code (textbooks, pre-1.0 GitHub repos) you did *not* curate the seed from; measure the coverage gap; use it to drive seed growth. _This is the #1 priority._ **(Instrument built AND first gap closed — 2026-06-10. `qiskit_migration/eval/dataset/adversarial.py` + `run_eval --adversarial` (non-gating) + held-out invariant test. Baseline was 0/13; curated those 13 into the seed (15→28), graduated them into golden (14→27, gate still 1.00 at 30/30 detection + 27/27 cleanliness), and refilled the probe with 5 new held-out cases now reading 0/5. The loop — measure gap → curate → graduate → refill — is proven and repeatable; remaining work is just more turns of it.)** **Automating it (so curation isn't hand-work): researched + Stage 1 and Stage 3 built. Pipeline = mine→propose→verify→promote. Griffe API-diff (Stage 1) validated on real Qiskit — `0.46→2.0` surfaces ~2,500 removals at ~17/18 recall, quantifying the table at ~1% coverage; it's high-recall but noisy. The execution-verification gate (Stage 3, `qiskit_migration/migration/verify_record.py`) and the full autonomous driver (`qiskit_migration/migration/harvest.py`, Stage 1→4) are **built, tested, and proven end-to-end on real Docker + Qiskit 2.x** — a 12-candidate batch verified 12/12 removed, rediscovering seed entries. The "sandbox-verified" trust tier (`_score`) is wired. Remaining is operational, not architectural: run a full harvest pass to promote the ~2,500 verified removals (then watch the adversarial eval climb off ~1%), and strengthen the still-weak replacement extraction (decorator `additional_msg`/`new_alias`, the `flake8-qiskit-migration` map, or RAG) — detection coverage already grows without it.**
 2. **"Fully local & free" has a Pinecone asterisk.** A fresh cloner can't run retrieval without a Pinecone account + key + re-ingesting a separately-cloned corpus → only `--offline` works out of the box. **Fix:** a local vector backend (Chroma/FAISS/sqlite-vec) behind the existing pluggable pattern + a shippable pre-built index.
 3. **Docker sandbox leaks containers on timeout.** `sandbox.py:111` `subprocess.run(timeout=…)` kills the `docker` CLI, not the container — an LLM infinite loop orphans a 1-CPU/1GB container. **Fix:** run with `--name` and `docker rm -f` on timeout (or wrap the in-container cmd with coreutils `timeout`). While there add `--cap-drop=ALL --security-opt=no-new-privileges`; note `SANDBOX_BACKEND=local` runs LLM output on the host with zero isolation (convention-only guard).
 4. **API isn't multi-instance-safe / no auth.** Rate limiter (`api/main.py:44`) is in-process memory keyed on direct client IP → resets on restart, and behind a proxy every request shares the proxy IP (one user exhausts all). `/metrics` unauthenticated; `user_id` in schema but never populated; cache key is code+target only (a better prompt/seed won't invalidate stale cached results — 1-day TTL mostly saves it). Fine for single-VM as documented; fix before real exposure.
 5. **Smaller/real:** repair loop feeds only the *latest* failure (can oscillate A→B→A and burn all repairs); it also sandbox-runs code that already failed static validation (wasted run). UI poll timeout (240s) < server job timeout (900s) → browser says "timed out" while the job still completes. `retrieval/search.py` calls `logging.basicConfig()` at import (library configuring global logging). Last-segment matching relies on hand-maintained `_GENERIC_SEGMENTS`/`_CURRENT_ALLOWLIST` stoplists. CI mypy non-blocking; no coverage; docker-build builds images it never runs.
 
-**Recommended order:** (1) adversarial eval ✅ → (2) local vector store + shipped index → (3) sandbox cleanup + cap-drop → (4) ~~behavioral-equivalence check~~ ✅ **DONE 2026-06-11** (`src/migration/equivalence.py`; statevector-fidelity, old-on-old vs new-on-new, real-Docker cross-version proof at fidelity 1.0 — the differentiator). Items 1–2 unlock the OSS story; 3 is a tiny safety PR.
+**Recommended order:** (1) adversarial eval ✅ → (2) local vector store + shipped index → (3) sandbox cleanup + cap-drop → (4) ~~behavioral-equivalence check~~ ✅ **DONE 2026-06-11** (`qiskit_migration/migration/equivalence.py`; statevector-fidelity, old-on-old vs new-on-new, real-Docker cross-version proof at fidelity 1.0 — the differentiator). Items 1–2 unlock the OSS story; 3 is a tiny safety PR.
 </content>

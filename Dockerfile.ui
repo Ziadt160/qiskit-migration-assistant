@@ -6,12 +6,12 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 COPY pyproject.toml README.md ./
-COPY src ./src
+COPY qiskit_migration ./qiskit_migration
 RUN pip install --upgrade pip && pip install .
 
 RUN useradd --create-home --uid 10001 appuser
 USER appuser
 
 EXPOSE 8501
-CMD ["streamlit", "run", "src/app/chatbot.py", \
+CMD ["streamlit", "run", "qiskit_migration/app/chatbot.py", \
      "--server.port=8501", "--server.address=0.0.0.0"]

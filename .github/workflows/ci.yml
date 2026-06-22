@@ -23,12 +23,12 @@ jobs:
           ruff check .
           ruff format --check .
       - name: Type check (mypy)
-        run: mypy src
+        run: mypy qiskit_migration
         continue-on-error: true
       - name: Unit tests
         run: pytest -q
       - name: RAG eval gate (offline, seed-only)
-        run: python -m src.eval.run_eval --seed-only --min-recall 0.9
+        run: python -m qiskit_migration.eval.run_eval --seed-only --min-recall 0.9
 
   docker-build:
     runs-on: ubuntu-latest
