@@ -4,6 +4,7 @@
 > per-change rationale — grounded in the official deprecation record and **validated by
 > actually executing the result** against the target Qiskit.
 
+[![Qiskit Ecosystem](https://img.shields.io/badge/Qiskit-Ecosystem-6929C4.svg)](https://www.ibm.com/quantum/ecosystem)
 [![CI](https://github.com/Ziadt160/qiskit-migration-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Ziadt160/qiskit-migration-assistant/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Qiskit target 2.x](https://img.shields.io/badge/qiskit%20target-2.x-6929c4.svg)](https://www.ibm.com/quantum/qiskit)
