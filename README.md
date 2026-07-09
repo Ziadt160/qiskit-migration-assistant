@@ -81,14 +81,17 @@ on the same 29-case golden set. With **gpt-4.1**:
 
 | End-to-end metric (29 cases) | Result |
 |---|---|
-| Migrated cleanly (passed static validation) | **22 / 29** |
-| Migrated **and executed clean on real Qiskit 2.x** | **20 / 29** |
-| Execution rate among the cases it migrated | **91%** (20 / 22) |
+| Migrated cleanly (passed static validation) | **29 / 29** |
+| Migrated **and executed clean on real Qiskit 2.x** | **27 / 29** |
+| Execution rate among migrated cases | **93%** (27 / 29) |
 
 The deep restructures pass — the full **`qiskit.opflow` VQE → primitives**, the **`qiskit.aqua`
-VQE → ecosystem** move, and **`execute()` → primitives**. Where the model slips (a few removed
-gate-methods such as `mct` / `fredkin`), the validators and sandbox **flag it as a failure**
-instead of returning broken-looking-clean code — which is the entire point. Reproduce with
+VQE → ecosystem** move, `execute()` → primitives, and the removed gate-methods (`mct` → `mcx`,
+`fredkin` → `cswap`, …). The two non-executing cases (`ibmq-removed`, `tools-visualization`) need
+an IBM Quantum account / matplotlib — not a migration fix. Being an LLM, the e2e tier **varies
+run-to-run** (a weaker run cleared ~22/29 validation); the deterministic gate above does not — and
+where the model does slip, the validators and sandbox **flag it as a failure** rather than
+returning broken-looking-clean code. Reproduce with
 `python -m qiskit_migration.eval.run_eval --e2e --sandbox-backend docker`.
 
 > The generator is swappable via one env var (`LLM_PROVIDER`) — local Ollama, Anthropic,
