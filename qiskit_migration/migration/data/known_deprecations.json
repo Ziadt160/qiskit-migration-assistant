@@ -511,5 +511,23 @@
     "replacement": "qiskit_finance.circuit.library",
     "note": "Aqua uncertainty models (NormalDistribution, LogNormalDistribution, GaussianConditionalIndependenceModel, ...) moved to qiskit-finance: `from qiskit_finance.circuit.library import NormalDistribution, LogNormalDistribution`.",
     "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.primitives.Sampler",
+    "status": "removed",
+    "since_version": "1.2",
+    "removed_in": "2.0",
+    "replacement": "qiskit.primitives.StatevectorSampler",
+    "note": "The V1 Sampler was removed in 2.0. Use a V2 sampler: StatevectorSampler (exact/statevector) or BackendSamplerV2 (hardware/Aer). V2 uses the PUB API: result = sampler.run([(circuit, params)]).result(); counts = result[0].data.<register>.get_counts().",
+    "source": "curated-seed"
+  },
+  {
+    "symbol": "qiskit.primitives.Estimator",
+    "status": "removed",
+    "since_version": "1.2",
+    "removed_in": "2.0",
+    "replacement": "qiskit.primitives.StatevectorEstimator",
+    "note": "The V1 Estimator was removed in 2.0. Use a V2 estimator: StatevectorEstimator (exact) or BackendEstimatorV2. V2 uses the PUB API: result = estimator.run([(circuit, observable)]).result(); value = result[0].data.evs.",
+    "source": "curated-seed"
   }
 ]

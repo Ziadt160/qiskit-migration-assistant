@@ -123,6 +123,22 @@ def test_legacy_ibmq_provider_maps_to_runtime(tmp_path):
     assert rec is not None and rec.replacement == "qiskit_ibm_runtime"
 
 
+def test_v1_primitives_removed_map_to_v2(tmp_path):
+    # V1 Sampler/Estimator were removed in 2.0 (sandbox-verified: ImportError on the target);
+    # they must map to the V2 statevector primitives.
+    store = DeprecationStore(str(tmp_path / "dep.db"))
+    store.create()
+    store.upsert_many(load_seed_records())
+    expected = {
+        "qiskit.primitives.Sampler": "qiskit.primitives.StatevectorSampler",
+        "qiskit.primitives.Estimator": "qiskit.primitives.StatevectorEstimator",
+    }
+    for symbol, replacement in expected.items():
+        rec = next((r for r in store.lookup({symbol}) if r.symbol == symbol), None)
+        assert rec is not None and rec.replacement == replacement
+        assert rec.status == "removed" and rec.removed_in == "2.0"
+
+
 def test_ml_segment_does_not_false_positive(tmp_path):
     # A bare `.ml()` call must NOT be flagged as the removed `qiskit.ml` module.
     store = DeprecationStore(str(tmp_path / "dep.db"))
